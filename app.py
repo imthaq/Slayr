@@ -5,8 +5,6 @@ import numpy as np
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
-from sklearn.cluster import KMeans
-from sklearn.neighbors import KNeighborsClassifier
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -82,23 +80,47 @@ options = vision.FaceLandmarkerOptions(
 )
 detector = vision.FaceLandmarker.create_from_options(options)
 
-# --- AI Models: Skin Tone & Season Classifiers ---
-def setup_classifiers():
-    # Standard CIELAB data from reference_data.py
-    X_mst = [item[:3] for item in MST_LAB]
-    y_mst = list(range(len(MST_LAB)))
-    mst_clf = KNeighborsClassifier(n_neighbors=1)
-    mst_clf.fit(X_mst, y_mst)
-    
-    X_season = [item[:3] for item in SEASON_LAB]
-    y_season = [item[3] for item in SEASON_LAB]
-    # Use k=3 for seasonal classification to be more robust against outliers
-    season_clf = KNeighborsClassifier(n_neighbors=3)
-    season_clf.fit(X_season, y_season)
-    
-    return mst_clf, season_clf
+# --- Lightweight "Models": KNN in pure NumPy (no SciPy / scikit-learn) ---
+MST_X = np.array([item[:3] for item in MST_LAB], dtype=np.float32)
+SEASON_X = np.array([item[:3] for item in SEASON_LAB], dtype=np.float32)
+SEASON_Y = [item[3] for item in SEASON_LAB]
 
-mst_clf, season_clf = setup_classifiers()
+
+def _euclidean_distances(x, X):
+    x = np.asarray(x, dtype=np.float32).reshape(1, -1)
+    X = np.asarray(X, dtype=np.float32)
+    d = X - x
+    return np.sqrt(np.sum(d * d, axis=1))
+
+
+def knn_predict_label(x, X, y, k=3):
+    if len(y) == 0:
+        return None
+    dists = _euclidean_distances(x, X)
+    k = int(max(1, min(k, len(y))))
+    idx = np.argsort(dists)[:k]
+    votes = {}
+    for i in idx:
+        label = y[int(i)]
+        votes[label] = votes.get(label, 0) + 1
+    # deterministic tie-break: smallest total distance among tied labels
+    top_vote = max(votes.values())
+    tied = [lab for lab, c in votes.items() if c == top_vote]
+    if len(tied) == 1:
+        return tied[0]
+    best_label = None
+    best_sum = None
+    for lab in tied:
+        s = float(np.sum([dists[int(i)] for i in idx if y[int(i)] == lab]))
+        if best_sum is None or s < best_sum:
+            best_sum = s
+            best_label = lab
+    return best_label
+
+
+def knn_predict_index(x, X):
+    dists = _euclidean_distances(x, X)
+    return int(np.argmin(dists))
 
 # --- Logic (Helpers: Face Shape) ---
 RECOMMENDATIONS = {
@@ -316,12 +338,10 @@ def analyze_color(image, landmarks):
     # Apply L-Boost
     l_std = min(100.0, l_std + l_boost)
     
-    # AI-Based MST Classification
-    mst_level = mst_clf.predict([[l_std, a_std, b_std]])[0]
+    # MST + Seasonal classification (KNN; data-driven, lightweight)
+    mst_level = knn_predict_index([l_std, a_std, b_std], MST_X)
     mst_label = get_mst_label(mst_level)
-    
-    # AI-Based Seasonal Classification
-    season_12 = season_clf.predict([[l_std, a_std, b_std]])[0]
+    season_12 = knn_predict_label([l_std, a_std, b_std], SEASON_X, SEASON_Y, k=3)
     
     # Undertone extraction (still useful for matching logic)
     # Natural balance: Warm has high b_std compared to a_std

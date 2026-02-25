@@ -2,7 +2,7 @@ flask
 mediapipe
 opencv-python-headless
 numpy
-scikit-learn
 flask-sqlalchemy
 flask-login
 flask-migrate
+pandas
