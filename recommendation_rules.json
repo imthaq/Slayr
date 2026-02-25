@@ -1,0 +1,152 @@
+{
+  "color_analysis": {
+    "roi_std_max": 22.0,
+    "face_mask_kernel_size": 15,
+    "face_mask_erode_iterations": 2,
+    "l_boost_rules": [
+      { "min_mean": 200.0, "boost": 3.0 },
+      { "min_mean": 170.0, "boost": 1.5 }
+    ]
+  },
+  "smart_match": {
+    "distance_confidence_scale": 3.5,
+    "exact_match_max_distance": 5.0,
+    "max_acceptable_distance": 15.0,
+    "undertone_penalty": 8.0
+  },
+  "palettes": {
+    "Spring": {
+      "colors": ["#FFD700", "#FF7F50", "#98FB98", "#E6E6FA"],
+      "desc": "Fresh, bright, and warm colors.",
+      "vibe": "Pastel"
+    },
+    "Summer": {
+      "colors": ["#B0E0E6", "#D8BFD8", "#F08080", "#778899"],
+      "desc": "Soft, cool, and muted colors.",
+      "vibe": "Pastel"
+    },
+    "Autumn": {
+      "colors": ["#D2691E", "#8B4513", "#556B2F", "#FF8C00"],
+      "desc": "Rich, warm, and earthy tones.",
+      "vibe": "Earthy"
+    },
+    "Winter": {
+      "colors": ["#000080", "#DC143C", "#000000", "#FFFFFF"],
+      "desc": "Sharp, cool, and vivid colors.",
+      "vibe": "Bold"
+    },
+    "Light Spring": {
+      "colors": ["#FFFACD", "#E0FFFF", "#FFB6C1", "#98FB98"],
+      "desc": "Light, warm, and clear colors.",
+      "vibe": "Pastel"
+    },
+    "True Spring": {
+      "colors": ["#FFD700", "#FF8C00", "#32CD32", "#FF4500"],
+      "desc": "Warm, bright, and saturated colors.",
+      "vibe": "Pastel"
+    },
+    "Bright Spring": {
+      "colors": ["#FFFF00", "#00FF7F", "#FF1493", "#00BFFF"],
+      "desc": "Highly saturated, warm, and clear.",
+      "vibe": "Bold"
+    },
+    "Light Summer": {
+      "colors": ["#F0F8FF", "#E6E6FA", "#FFC0CB", "#AFEEEE"],
+      "desc": "Light, cool, and delicate colors.",
+      "vibe": "Pastel"
+    },
+    "True Summer": {
+      "colors": ["#87CEEB", "#DDA0DD", "#B0C4DE", "#4682B4"],
+      "desc": "Cool, muted, and soft colors.",
+      "vibe": "Pastel"
+    },
+    "Soft Summer": {
+      "colors": ["#778899", "#BC8F8F", "#BDB76B", "#6A5ACD"],
+      "desc": "Muted, cool, and hazy colors.",
+      "vibe": "Pastel"
+    },
+    "Soft Autumn": {
+      "colors": ["#BC8F8F", "#BDB76B", "#CD853F", "#556B2F"],
+      "desc": "Muted, warm, and gentle earthy tones.",
+      "vibe": "Earthy"
+    },
+    "True Autumn": {
+      "colors": ["#D2691E", "#8B4513", "#A52A2A", "#808000"],
+      "desc": "Rich, warm, and deep earthy colors.",
+      "vibe": "Earthy"
+    },
+    "Warm Autumn": {
+      "colors": ["#FF8C00", "#D2691E", "#B8860B", "#A52A2A"],
+      "desc": "Warm, deep, and glowing tones.",
+      "vibe": "Earthy"
+    },
+    "Deep Winter": {
+      "colors": ["#191970", "#800000", "#006400", "#000000"],
+      "desc": "Deep, cool, and intense colors.",
+      "vibe": "Bold"
+    },
+    "True Winter": {
+      "colors": ["#0000FF", "#FF0000", "#FFFFFF", "#000000"],
+      "desc": "True cool, high contrast colors.",
+      "vibe": "Bold"
+    },
+    "Bright Winter": {
+      "colors": ["#00FFFF", "#FF00FF", "#00FF00", "#FFFFFF"],
+      "desc": "Bright, cool, and icy tones.",
+      "vibe": "Bold"
+    }
+  },
+  "season_vibes": {
+    "Spring": "Pastel",
+    "Summer": "Pastel",
+    "Autumn": "Earthy",
+    "Winter": "Bold",
+    "Light Spring": "Pastel",
+    "True Spring": "Pastel",
+    "Bright Spring": "Bold",
+    "Light Summer": "Pastel",
+    "True Summer": "Pastel",
+    "Soft Summer": "Pastel",
+    "Soft Autumn": "Earthy",
+    "True Autumn": "Earthy",
+    "Warm Autumn": "Earthy",
+    "Deep Winter": "Bold",
+    "True Winter": "Bold",
+    "Bright Winter": "Bold"
+  },
+  "face_shape_recommendations": {
+    "Oval": "Balanced proportions. Lucky you! Most styles work.",
+    "Square": "Strong jawline. Soften angles with waves or round frames.",
+    "Round": "Soft angles. Add structure with angular frames or height in hair.",
+    "Heart": "Wide forehead, narrow chin. Balance with chin-length bobs.",
+    "Diamond": "Wide cheekbones. Highlight them, soften the chin.",
+    "Oblong": "Long face. Add width with curls or oversized frames."
+  },
+  "style_lines": {
+    "Oval": {
+      "lines": "Balanced",
+      "styles": ["Versatile", "Timeless"]
+    },
+    "Square": {
+      "lines": "Softened",
+      "styles": ["Large curves", "Unstructured tops"]
+    },
+    "Round": {
+      "lines": "Angular",
+      "styles": ["Vertical lines", "Structured jackets"]
+    },
+    "Heart": {
+      "lines": "Bottom-weighted",
+      "styles": ["A-line skirts", "Wide-leg pants"]
+    },
+    "Diamond": {
+      "lines": "Cheek-focused",
+      "styles": ["Boat necks", "V-necks"]
+    },
+    "Oblong": {
+      "lines": "Horizontal",
+      "styles": ["Wide belts", "Oversized frames"]
+    }
+  }
+}
+

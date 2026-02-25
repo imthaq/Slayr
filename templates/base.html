@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slayr | {% block title %}AI Beauty Analysis{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: '#F5E8E1',
+                        'muted-gold': '#D4A373',
+                        'dusty-rose': '#E5989B',
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['Lato', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F5E8E1;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+
+<body class="font-sans text-gray-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="w-full py-4 px-6 flex justify-between items-center glass-panel sticky top-0 z-50">
+        <a href="{{ url_for('index') }}" class="text-3xl font-serif font-bold text-muted-gold tracking-wider">Slayr.</a>
+        <nav class="hidden md:flex space-x-6 text-sm uppercase tracking-widest">
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('dashboard') }}" class="hover:text-dusty-rose transition-colors">Dashboard</a>
+            <a href="{{ url_for('chroma_skin') }}" class="hover:text-dusty-rose transition-colors">Chroma</a>
+            <a href="{{ url_for('smart_match') }}" class="hover:text-dusty-rose transition-colors">Match</a>
+            <a href="{{ url_for('vibe_check') }}" class="hover:text-dusty-rose transition-colors">Vibe</a>
+            <a href="{{ url_for('morpho_face') }}" class="hover:text-dusty-rose transition-colors">Morpho</a>
+            <a href="{{ url_for('frame_fit') }}" class="hover:text-dusty-rose transition-colors">Frame</a>
+            <a href="{{ url_for('grooming_blueprint') }}" class="hover:text-dusty-rose transition-colors">Grooming</a>
+            <a href="{{ url_for('capsule_wardrobe') }}" class="hover:text-dusty-rose transition-colors">Wardrobe</a>
+            <a href="{{ url_for('logout') }}" class="text-gray-500 hover:text-red-500 transition-colors">Logout</a>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="hover:text-dusty-rose transition-colors">Login</a>
+            <a href="{{ url_for('signup') }}"
+                class="px-4 py-2 bg-muted-gold text-white rounded-full hover:bg-dusty-rose transition-colors">Sign
+                Up</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col items-center justify-center p-4">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="mb-4 space-y-2">
+            {% for message in messages %}
+            <div class="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="w-full py-6 text-center text-gray-400 text-xs uppercase tracking-widest">
+        &copy; 2024 Slayr AI. All rights reserved.
+    </footer>
+
+</body>
+
+</html>

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Grooming Blueprint{% endblock %}
+
+{% block content %}
+<div class="glass-panel p-8 rounded-[30px] shadow-xl w-full max-w-4xl">
+    <div class="text-center mb-10">
+        <h2 class="text-3xl font-serif text-gray-800">Grooming <span class="text-muted-gold">Blueprint</span></h2>
+        <p class="text-gray-500 mt-2"> Visualize different beard styles on your face.</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <!-- Upload Section -->
+        <div class="space-y-6">
+            <div id="drop-zone" class="relative group cursor-pointer">
+                <div
+                    class="absolute -inset-1 bg-gradient-to-r from-gray-900 to-gray-600 rounded-[30px] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
+                </div>
+                <div
+                    class="relative w-full h-64 bg-white/80 rounded-[30px] border-2 border-dashed border-gray-400 flex flex-col items-center justify-center space-y-4 hover:bg-white transition-all duration-300">
+                    <svg class="w-12 h-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                    <p class="text-gray-500 font-medium">Upload Selfie</p>
+                    <input type="file" name="image" id="file-input" class="hidden" accept="image/*" required>
+                </div>
+            </div>
+
+            <button type="submit"
+                class="w-full py-4 bg-gray-900 text-white rounded-full font-bold uppercase tracking-widest hover:bg-gray-700 transition-colors shadow-lg">
+                Try Beard Style
+            </button>
+        </div>
+
+        <!-- Result Section -->
+        <div
+            class="flex items-center justify-center bg-gray-50 rounded-[30px] border border-gray-100 min-h-[300px] overflow-hidden">
+            {% if processed_image %}
+            <img src="{{ url_for('static', filename='uploads/' + processed_image) }}"
+                class="w-full h-full object-cover rounded-[30px]" alt="Grooming Result">
+            {% else %}
+            <p class="text-gray-400 italic">Result will appear here</p>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<script>
+    const fileInput = document.getElementById('file-input');
+    const dropZone = document.getElementById('drop-zone');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) {
+            dropZone.classList.add('border-green-500');
+            // Optional: Show preview logic here if consistent with other features
+        }
+    });
+</script>
+{% endblock %}

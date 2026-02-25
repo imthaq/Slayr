@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Morpho-Face Analysis{% endblock %}
+
+{% block content %}
+<div class="glass-panel p-8 rounded-[30px] shadow-xl w-full max-w-4xl">
+    <div class="text-center mb-10">
+        <h2 class="text-3xl font-serif text-gray-800">Morpho-Face <span class="text-muted-gold">Geometry</span></h2>
+        <p class="text-gray-500 mt-2">Analyze your facial landmarks and shape.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+        <!-- Input Section -->
+        <div class="space-y-6">
+            <div id="drop-zone" class="relative group cursor-pointer">
+                <div
+                    class="absolute -inset-1 bg-gradient-to-r from-gray-900 to-gray-600 rounded-[30px] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
+                </div>
+                <div
+                    class="relative w-full h-64 bg-white/80 rounded-[30px] border-2 border-dashed border-gray-300 flex flex-col items-center justify-center space-y-4 hover:bg-white transition-all duration-300 overflow-hidden">
+                    <img id="input-preview" class="hidden absolute inset-0 w-full h-full object-cover opacity-50" />
+                    <div class="relative z-10 flex flex-col items-center">
+                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                        <p class="text-gray-500 font-medium mt-2">Upload for Landmark Analysis</p>
+                    </div>
+                    <input type="file" id="file-input" class="hidden" accept="image/*">
+                </div>
+            </div>
+            <button id="analyze-btn"
+                class="w-full py-4 bg-gray-900 text-white rounded-full font-bold uppercase tracking-widest hover:bg-gray-700 transition-colors shadow-lg hidden">
+                Analyze Face Geometry
+            </button>
+        </div>
+
+        <!-- Output Section -->
+        <div class="flex flex-col items-center justify-center space-y-4">
+            <!-- Image Container -->
+            <div
+                class="relative w-80 h-80 border-4 border-muted-gold rounded-full flex items-center justify-center bg-white shadow-2xl overflow-hidden">
+                <!-- Default State -->
+                <div id="default-state" class="text-center {% if shape != 'Unknown' %}hidden{% endif %}">
+                    <p class="text-xs uppercase tracking-widest text-gray-400">Current Shape</p>
+                    <h3 class="text-3xl font-serif text-gray-800 mt-2">{{ shape }}</h3>
+                </div>
+
+                <!-- Result Image -->
+                <img id="result-image" class="absolute inset-0 w-full h-full object-cover hidden" />
+            </div>
+
+            <!-- Text BELOW image (Requested) -->
+            <div id="result-text-container"
+                class="text-center space-y-2 mt-4 {% if shape == 'Unknown' %}hidden{% endif %}">
+                <h3 id="result-shape" class="text-4xl font-serif text-gray-800">{{ shape }}</h3>
+                <p id="result-desc" class="text-sm text-gray-600 leading-relaxed font-light max-w-xs mx-auto">
+                    {{ description }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('file-input');
+    const dropZone = document.getElementById('drop-zone');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const resultImage = document.getElementById('result-image');
+    const defaultState = document.getElementById('default-state');
+    const resultShape = document.getElementById('result-shape');
+    const resultDesc = document.getElementById('result-desc');
+    const inputPreview = document.getElementById('input-preview');
+    const resultTextContainer = document.getElementById('result-text-container');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) {
+            const file = fileInput.files[0];
+            dropZone.querySelector('p').innerText = file.name;
+            dropZone.classList.add('border-green-500');
+            analyzeBtn.classList.remove('hidden');
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (inputPreview) {
+                    inputPreview.src = e.target.result;
+                    inputPreview.classList.remove('hidden');
+                }
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    analyzeBtn.addEventListener('click', () => {
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append('image', file);
+
+        analyzeBtn.innerText = "Processing Mesh...";
+        analyzeBtn.disabled = true;
+
+        fetch('/morpho-analyze', {
+            method: 'POST',
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                analyzeBtn.innerText = "Analyze Face Geometry";
+                analyzeBtn.disabled = false;
+
+                if (data.error) return alert(data.error);
+
+                // Show Image
+                defaultState.classList.add('hidden');
+                resultImage.src = data.image_url;
+                resultImage.classList.remove('hidden');
+
+                // Update Text
+                resultShape.innerText = data.shape;
+                resultDesc.innerText = data.description;
+                resultTextContainer.classList.remove('hidden');
+            })
+            .catch(err => {
+                console.error(err);
+                analyzeBtn.innerText = "Error - Try Again";
+                analyzeBtn.disabled = false;
+            });
+    });
+</script>
+{% endblock %}

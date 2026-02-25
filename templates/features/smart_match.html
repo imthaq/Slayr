@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Smart Match{% endblock %}
+
+{% block content %}
+<div class="glass-panel p-8 rounded-[30px] shadow-xl w-full max-w-4xl">
+    <div class="text-center mb-10">
+        <h2 class="text-3xl font-serif text-gray-800">Smart Match <span class="text-muted-gold">Foundation</span></h2>
+        <p class="text-gray-500 mt-2">Upload a selfie to find your perfect shade match.</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <!-- Upload Section -->
+        <div class="space-y-6">
+            <div id="drop-zone" class="relative group cursor-pointer"
+                data-swatched-image="{{ url_for('static', filename='uploads/' + swatched_image) if swatched_image else '' }}"
+                data-swatch-coords='{{ swatch_coords|tojson if swatch_coords else "{}" }}'
+                data-foundation-hex="{{ matches[0].hex_code if matches else '#D4A373' }}"
+                data-concealer-hex="{{ concealer_matches[0].hex_code if concealer_matches else '#F5E8E1' }}">
+                <div
+                    class="absolute -inset-1 bg-gradient-to-r from-muted-gold to-dusty-rose rounded-[30px] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
+                </div>
+                <div
+                    class="relative w-full h-64 bg-white/80 rounded-[30px] border-2 border-dashed border-muted-gold/50 flex flex-col items-center justify-center space-y-4 hover:bg-white transition-all duration-300 overflow-hidden">
+                    <img id="preview-image" class="hidden absolute inset-0 w-full h-full object-cover opacity-50" />
+                    <div id="upload-placeholder" class="relative z-10 flex flex-col items-center">
+                        <svg class="w-12 h-12 text-muted-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                        <p class="text-gray-500 font-medium mt-2">Upload Selfie</p>
+                    </div>
+                    <input type="file" name="image" id="file-input" class="hidden" accept="image/*" {% if not matches
+                        %}required{% endif %}>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2 font-serif">Filter by Brand (Optional)</label>
+                <select name="brand"
+                    class="w-full px-4 py-3 rounded-xl bg-gray-50 border-transparent focus:border-muted-gold focus:bg-white focus:ring-0 transition-colors">
+                    <option value="">All Brands</option>
+                    {% for brand in brands %}
+                    <option value="{{ brand }}">{{ brand }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit"
+                class="w-full py-4 bg-gray-900 text-white rounded-full font-bold uppercase tracking-widest hover:bg-muted-gold transition-colors shadow-lg">
+                Find My Shade
+            </button>
+        </div>
+
+        <!-- Results Section -->
+        <div class="space-y-6">
+            {% if skin_hex %}
+            <div class="bg-white p-6 rounded-[20px] shadow-sm mb-6 flex items-center justify-between">
+                <div>
+                    <p class="text-xs uppercase tracking-widest text-gray-400">Your Skin Analysis</p>
+                    <p class="text-xs text-gray-500">Detected: <span class="font-mono text-gray-800">{{ skin_hex
+                            }}</span></p>
+                    {% if mst_label %}
+                    <p class="text-xs text-gray-700 font-bold uppercase mt-1">Tone: {{ mst_label }}</p>
+                    {% endif %}
+                    {% if season %}
+                    <p class="text-xs text-muted-gold font-bold uppercase mt-1">Season: {{ season }}</p>
+                    {% endif %}
+                </div>
+                <div class="w-12 h-12 rounded-full border shadow-sm" data-bg-color="{{ skin_hex }}"></div>
+            </div>
+
+            {% if swatched_image %}
+            <h3 class="font-serif text-xl text-gray-800">Visual Swatch</h3>
+            <div
+                class="relative rounded-xl overflow-hidden shadow-lg border border-gray-100 aspect-[3/4] max-h-96 w-full bg-gray-100">
+                <canvas id="swatch-canvas" class="w-full h-full object-contain"></canvas>
+                <div class="absolute bottom-2 left-2 bg-white/80 px-2 py-1 rounded text-xs z-10">Tap shades to swatch
+                </div>
+            </div>
+            {% endif %}
+
+            <h3 class="font-serif text-xl text-gray-800 mt-6">Foundation Matches</h3>
+            {% if matches %}
+            <div class="space-y-4">
+                {% for match in matches %}
+                <div onclick="updateSwatch('foundation', '{{ match.hex_code }}')"
+                    class="cursor-pointer bg-white p-4 rounded-xl flex items-center space-x-4 shadow-sm border {% if loop.first %}border-muted-gold ring-1 ring-muted-gold ring-opacity-50{% else %}border-gray-100{% endif %} hover:border-muted-gold transition-colors transform hover:scale-[1.01] relative">
+                    {% if loop.first %}
+                    <div class="absolute -top-2 -right-2 flex flex-col items-end">
+                        <span
+                            class="bg-muted-gold text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm z-10">
+                            {% if match.is_exact %}EXACT MATCH{% else %}BEST MATCH{% endif %}
+                        </span>
+                        <span
+                            class="bg-white text-muted-gold text-[9px] px-1 border border-muted-gold rounded mt-0.5 font-bold">{{
+                            match.match_score }}% Confidence</span>
+                    </div>
+                    {% else %}
+                    <span class="absolute top-2 right-2 text-[9px] text-gray-400 font-mono">{{ match.match_score }}%
+                        Match</span>
+                    {% endif %}
+                    <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                        <div class="w-full h-full" data-bg-color="{{ match.hex_code }}"></div>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-start">
+                            <h4 class="font-bold text-gray-800">{{ match.brand }}</h4>
+                        </div>
+                        <p class="text-[11px] text-gray-600 leading-tight">{{ match.product }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Shade No: <span
+                                class="bg-gray-100 px-1.5 py-0.5 rounded font-black text-gray-900 border border-gray-200">{{
+                                match.name }}</span></p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="bg-gray-50 border border-gray-100 rounded-xl p-4 text-center text-sm text-gray-500">
+                No high-confidence foundation matches found for this brand.
+            </div>
+            {% endif %}
+
+            {% if concealer_matches is not none %}
+            <h3 class="font-serif text-xl text-gray-800 mt-8">Concealer Matches</h3>
+            {% if concealer_matches %}
+            <div class="space-y-4">
+                {% for match in concealer_matches %}
+                <div onclick="updateSwatch('concealer', '{{ match.hex_code }}')"
+                    class="cursor-pointer bg-white p-4 rounded-xl flex items-center space-x-4 shadow-sm border {% if loop.first %}border-dusty-rose ring-1 ring-dusty-rose ring-opacity-50{% else %}border-gray-100{% endif %} hover:border-dusty-rose transition-colors transform hover:scale-[1.01] relative">
+                    {% if loop.first %}
+                    <div class="absolute -top-2 -right-2 flex flex-col items-end">
+                        <span
+                            class="bg-dusty-rose text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm z-10">TOP
+                            PICK</span>
+                        <span
+                            class="bg-white text-dusty-rose text-[9px] px-1 border border-dusty-rose rounded mt-0.5 font-bold">{{
+                            match.match_score }}% Precision</span>
+                    </div>
+                    {% else %}
+                    <span class="absolute top-2 right-2 text-[9px] text-gray-400 font-mono">{{ match.match_score }}%
+                        Match</span>
+                    {% endif %}
+                    <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                        <div class="w-full h-full" data-bg-color="{{ match.hex_code }}"></div>
+                    </div>
+                    <div class="flex-grow">
+                        <h4 class="font-bold text-gray-800">{{ match.brand }}</h4>
+                        <p class="text-[11px] text-gray-600 leading-tight">{{ match.product }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Shade No: <span
+                                class="bg-gray-100 px-1.5 py-0.5 rounded font-black text-gray-900 border border-gray-200">{{
+                                match.name }}</span></p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="bg-gray-50 border border-gray-100 rounded-xl p-4 text-center text-sm text-gray-500">
+                No high-confidence concealer matches found for this brand.
+            </div>
+            {% endif %}
+            {% endif %}
+
+            {% else %}
+            <div class="h-full flex flex-col items-center justify-center text-gray-400 opacity-50 relative">
+                <p class="z-10">Upload an image to see results.</p>
+            </div>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<script>
+    // --- File Preview Logic ---
+    const fileInput = document.getElementById('file-input');
+    const dropZone = document.getElementById('drop-zone');
+    const previewImage = document.getElementById('preview-image');
+    const uploadPlaceholder = document.getElementById('upload-placeholder');
+
+    function showPreview(src) {
+        if (previewImage && src) {
+            previewImage.src = src;
+            previewImage.classList.remove('hidden');
+            if (uploadPlaceholder) uploadPlaceholder.classList.add('opacity-0');
+        }
+    }
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) {
+            const file = fileInput.files[0];
+            dropZone.classList.add('border-green-500');
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                showPreview(e.target.result);
+                if (dropZone.querySelector('p')) dropZone.querySelector('p').innerText = file.name;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // --- Persist Image & Interactive Swatch Logic ---
+    const dropZoneData = document.getElementById('drop-zone');
+    const canvas = document.getElementById('swatch-canvas');
+
+    if (dropZoneData && canvas) {
+        // Read data attributes
+        const swatchedImage = dropZoneData.dataset.swatchedImage;
+        const swatchCoords = JSON.parse(dropZoneData.dataset.swatchCoords || '{}');
+
+
+        if (swatchedImage) {
+            showPreview(swatchedImage);
+            dropZone.classList.add('border-green-500');
+
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.src = swatchedImage;
+
+            // Coords from parsed JSON
+            const fCoord = swatchCoords.foundation || { x: 0, y: 0 };
+            const cCoord = swatchCoords.concealer || { x: 0, y: 0 };
+
+            // Initial colors logic
+            let currentFoundationHex = dropZoneData.dataset.foundationHex || '#D4A373';
+            let currentConcealerHex = dropZoneData.dataset.concealerHex || '#F5E8E1';
+
+            img.onload = () => {
+                // Set canvas resolution to match image
+                canvas.width = img.width;
+                canvas.height = img.height;
+                draw();
+            };
+
+            function draw() {
+                if (!canvas.width) return;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+
+                drawSwatch(fCoord.x * canvas.width, fCoord.y * canvas.height, currentFoundationHex, "Foundation");
+                drawSwatch(cCoord.x * canvas.width, cCoord.y * canvas.height, currentConcealerHex, "Concealer");
+            }
+
+            function drawSwatch(x, y, hex, label) {
+                ctx.beginPath();
+                ctx.arc(x, y, 30, 0, 2 * Math.PI);
+                ctx.fillStyle = hex;
+                ctx.fill();
+                ctx.lineWidth = 0;
+                ctx.strokeStyle = "white";
+                ctx.stroke();
+            }
+
+            window.updateSwatch = function (type, hex) {
+                if (type === 'foundation') currentFoundationHex = hex;
+                if (type === 'concealer') currentConcealerHex = hex;
+                draw();
+            }
+        }
+    }
+
+    // Apply background colors to elements with data-bg-color
+    document.querySelectorAll('[data-bg-color]').forEach(el => {
+        el.style.backgroundColor = el.dataset.bgColor;
+    });
+</script>
+{% endblock %}

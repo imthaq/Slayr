@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-6xl space-y-12">
+
+    <!-- Welcome Header -->
+    <div class="flex justify-between items-end border-b border-gray-200 pb-6">
+        <div>
+            <h2 class="text-4xl font-serif text-gray-800">Hello, <span class="text-muted-gold">{{ user.username
+                    }}</span></h2>
+            <p class="text-gray-500 mt-2">Here is your beauty profile overview.</p>
+        </div>
+        <div class="text-right">
+            <p class="text-xs uppercase tracking-widest text-gray-400">Face Shape</p>
+            <p class="text-xl font-serif">{{ user.face_shape or 'Not Analyzed' }}</p>
+        </div>
+    </div>
+
+    <!-- Main Features Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+        <!-- Smart Match Card -->
+        <a href="{{ url_for('smart_match') }}"
+            class="group relative overflow-hidden rounded-[30px] bg-white shadow-sm hover:shadow-xl transition-all duration-300 aspect-[4/3] flex flex-col justify-end p-8">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
+            <!-- Placeholder Background -->
+            <div class="absolute inset-0 bg-gray-200 group-hover:scale-105 transition-transform duration-500"></div>
+
+            <div class="relative z-20 text-white">
+                <h3 class="text-2xl font-serif mb-1">Smart Match</h3>
+                <p class="text-sm opacity-90">Find your perfect foundation shade.</p>
+            </div>
+        </a>
+
+        <!-- Chroma Skin Card -->
+        <a href="{{ url_for('chroma_skin') }}"
+            class="group relative overflow-hidden rounded-[30px] bg-white shadow-sm hover:shadow-xl transition-all duration-300 aspect-[4/3] flex flex-col justify-end p-8">
+            <div class="absolute inset-0 bg-gradient-to-t from-muted-gold/80 to-transparent z-10"></div>
+            <div class="absolute inset-0 bg-cream group-hover:scale-105 transition-transform duration-500"></div>
+
+            <div class="relative z-20 text-white">
+                <h3 class="text-2xl font-serif mb-1">Chroma-Skin</h3>
+                <p class="text-sm opacity-90">Undertone & Palette Analysis.</p>
+            </div>
+        </a>
+
+        <!-- Morpho Face Card -->
+        <a href="{{ url_for('morpho_face') }}"
+            class="group relative overflow-hidden rounded-[30px] bg-white shadow-sm hover:shadow-xl transition-all duration-300 aspect-[4/3] flex flex-col justify-end p-8">
+            <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent z-10"></div>
+            <div class="absolute inset-0 bg-gray-300 group-hover:scale-105 transition-transform duration-500"></div>
+
+            <div class="relative z-20 text-white">
+                <h3 class="text-2xl font-serif mb-1">Morpho-Face</h3>
+                <p class="text-sm opacity-90">Geometric Face Shape Analysis.</p>
+            </div>
+        </a>
+
+        <!-- Vibe Check Card -->
+        <a href="{{ url_for('vibe_check') }}"
+            class="group relative overflow-hidden rounded-[30px] bg-white shadow-sm hover:shadow-xl transition-all duration-300 aspect-[4/3] flex flex-col justify-end p-8">
+            <div class="absolute inset-0 bg-gradient-to-t from-dusty-rose/80 to-transparent z-10"></div>
+            <div class="absolute inset-0 bg-pink-100 group-hover:scale-105 transition-transform duration-500"></div>
+
+            <div class="relative z-20 text-white">
+                <h3 class="text-2xl font-serif mb-1">Vibe-Check</h3>
+                <p class="text-sm opacity-90">Seasonal Style Palette.</p>
+            </div>
+        </a>
+
+        <!-- Coming Soon Cards -->
+        <div
+            class="rounded-[30px] bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center p-8 opacity-60">
+            <p class="font-serif text-gray-400 text-lg">Frame-Fit</p>
+            <span class="text-xs uppercase bg-gray-200 px-2 py-1 rounded mt-2">Coming Soon</span>
+        </div>
+        <div
+            class="rounded-[30px] bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center p-8 opacity-60">
+            <p class="font-serif text-gray-400 text-lg">Grooming Blueprint</p>
+            <span class="text-xs uppercase bg-gray-200 px-2 py-1 rounded mt-2">Coming Soon</span>
+        </div>
+        <div
+            class="rounded-[30px] bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center p-8 opacity-60">
+            <p class="font-serif text-gray-400 text-lg">Capsule Wardrobe</p>
+            <span class="text-xs uppercase bg-gray-200 px-2 py-1 rounded mt-2">Coming Soon</span>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
