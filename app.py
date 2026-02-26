@@ -141,47 +141,6 @@ def analyze_face_shape(landmarks, image_width, image_height, matrix=None):
         return "Oval"
 
 # --- Logic (Helpers: Color Analysis) ---
-def apply_white_balance(img, face_mask=None):
-    """
-    Improved White Balance:
-    If face_mask is provided, compute average based only on the face region
-    to prevent colored backgrounds (blue/green) from skewing the results.
-    """
-    if face_mask is not None:
-        # Use only face pixels for stats
-        avg_b = np.mean(img[face_mask > 0, 0])
-        avg_g = np.mean(img[face_mask > 0, 1])
-        avg_r = np.mean(img[face_mask > 0, 2])
-    else:
-        avg_b = np.mean(img[:, :, 0])
-        avg_g = np.mean(img[:, :, 1])
-        avg_r = np.mean(img[:, :, 2])
-        
-    avg = (avg_b + avg_g + avg_r) / 3
-    if avg_b == 0 or avg_g == 0 or avg_r == 0: return img
-    
-    img = img.astype(np.float32)
-    img[:, :, 0] = np.clip(img[:, :, 0] * (avg / avg_b), 0, 255)
-    img[:, :, 1] = np.clip(img[:, :, 1] * (avg / avg_g), 0, 255)
-    img[:, :, 2] = np.clip(img[:, :, 2] * (avg / avg_r), 0, 255)
-    return img.astype(np.uint8)
-
-def calibrate_by_eye_white(image, landmarks):
-    """Uses the sclera (indices 362, 398) to calibrate the global lighting offset."""
-    h, w, _ = image.shape
-    offsets = []
-    for idx in [362, 398, 33, 133]: # Samples from both eyes' sclera areas
-        cx, cy = int(landmarks[idx].x * w), int(landmarks[idx].y * h)
-        patch = image[max(0, cy-2):min(h, cy+2), max(0, cx-2):min(w, cx+2)]
-        if patch.size > 0:
-            avg_bgr = np.mean(patch, axis=(0, 1))
-            lab = cv2.cvtColor(np.uint8([[avg_bgr]]), cv2.COLOR_BGR2LAB)[0][0]
-            oa = 128.0 - float(lab[1])
-            ob = 128.0 - float(lab[2])
-            offsets.append((oa, ob))
-    
-    if not offsets: return 0, 0
-    return np.mean(offsets, axis=0)
 
 def delta_e_cie2000_vec(lab1, lab_array):
     """
@@ -202,85 +161,48 @@ def cv2_to_std_lab(l_cv2, a_cv2, b_cv2):
     b_std = b_cv2 - 128.0
     return l_std, a_std, b_std
 
-def analyze_color(image, landmarks):
+def analyze_color(image, landmarks, wrist_image=None):
     h, w, _ = image.shape
     
-    # 1. Environmental Variance Normalization (Anti-Gravity)
-    # Use a precise facial-oval mask for white balance (avoid corners of bounding box)
-    face_pts = np.array([[int(landmarks[i].x * w), int(landmarks[i].y * h)] for i in [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109]])
-    face_mask = np.zeros((h, w), dtype=np.uint8)
-    cv2.fillPoly(face_mask, [face_pts], 255)
-    # Erode more aggressively (20 iterations) to get only "Pure Skin" zones
-    face_mask = cv2.erode(face_mask, np.ones((15,15), np.uint8), iterations=2)
-    
-    image_norm = apply_white_balance(image.copy(), face_mask)
-    
-    # 1.5 Adaptive L-Boost (K-Beauty / Luminous Lighting Compensation)
-    # If the face is overall bright, users expect a "fairer" match.
-    face_mean = np.mean(image[face_mask > 0])
-    l_boost = 0
-    if face_mean > 200: l_boost = 3.0
-    elif face_mean > 170: l_boost = 1.5
-    
-    # 2. Eye-White Calibration Offset
-    # Sample eye-white to find global lighting bias
-    da_env, db_env = calibrate_by_eye_white(image, landmarks)
-    
+    # 1. Direct Skin Sampling - Focus on well-lit central areas
     rois = []
-    # Anti-Blush Indices: Forehead center (10), Forehead sides (67, 297), 
-    # Lateral cheek (136, 365), and Jawline (58, 288).
-    # Avoiding 101/330 (Apples of cheeks) which are usually blush zones.
-    for idx in [10, 67, 297, 136, 365, 58, 288]: 
+    # Sample from center forehead, under eyes, and upper cheeks (avoid jaw/edges which have shadows)
+    for idx in [10, 9, 8, 151, 65, 295, 330, 101, 50, 280]: 
         cx, cy = int(landmarks[idx].x * w), int(landmarks[idx].y * h)
-        y1, y2 = max(0, cy-12), min(h, cy+12)
-        x1, x2 = max(0, cx-12), min(w, cx+12)
-        patch = image_norm[y1:y2, x1:x2]
+        y1, y2 = max(0, cy-10), min(h, cy+10)
+        x1, x2 = max(0, cx-10), min(w, cx+10)
+        patch = image[y1:y2, x1:x2]
         
         if patch.size > 0:
-            # 3. Precision Variance Filtering
-            # Tightened threshold (22) to avoid hair, blush, and highlights.
-            std = np.std(patch)
-            if std < 22: 
-                # 4. Gaussian-Weighted Spatial Sampling
-                ph, pw, _ = patch.shape
-                y_grid, x_grid = np.ogrid[:ph, :pw]
-                center_y, center_x = ph / 2, pw / 2
-                sigma = min(ph, pw) / 3.5
-                weight = np.exp(-((x_grid - center_x)**2 + (y_grid - center_y)**2) / (2 * sigma**2))
-                weight /= weight.sum()
-                
-                # Median-based pixel aggregation to reject specular highlights/noise
-                avg_b = np.median(patch[:, :, 0])
-                avg_g = np.median(patch[:, :, 1])
-                avg_r = np.median(patch[:, :, 2])
-                rois.append(np.array([avg_b, avg_g, avg_r]))
+            avg_b = np.median(patch[:, :, 0])
+            avg_g = np.median(patch[:, :, 1])
+            avg_r = np.median(patch[:, :, 2])
+            rois.append(np.array([avg_b, avg_g, avg_r]))
             
     if not rois: return "#D4A373", "Neutral", (60.0, 0.0, 0.0), "Soft Autumn", "MST 5"
 
-    # Luminous Sampling: Aggregating the "Best" 75% zone
     rois = np.array(rois)
-    # Filter for the upper quartile of lightness to represent perfected skin
-    l_vals = 0.299 * rois[:, 2] + 0.587 * rois[:, 1] + 0.114 * rois[:, 0]
-    threshold = np.percentile(l_vals, 60)
-    best_rois = rois[l_vals >= threshold]
     
-    dominant_color = np.median(best_rois, axis=0) 
+    # Calculate luminance to filter out shadows
+    luminance = 0.299 * rois[:, 2] + 0.587 * rois[:, 1] + 0.114 * rois[:, 0]
+    
+    # Keep the top 50% brightest patches to avoid shadows, then take the median of those
+    threshold = np.percentile(luminance, 50)
+    well_lit_rois = rois[luminance >= threshold]
+    
+    dominant_color = np.median(well_lit_rois, axis=0) 
     dominant_rgb = dominant_color[::-1].astype(int)
     hex_code = "#{:02x}{:02x}{:02x}".format(*dominant_rgb)
     
     # LAB Conversion: OpenCV (0-255)
     lab_color_cv2 = cv2.cvtColor(np.uint8([[dominant_color]]), cv2.COLOR_BGR2LAB)[0][0]
     
-    # 5. Lighting Calibration (Eye-White Adjustment)
     l_raw = float(lab_color_cv2[0])
-    a_cal = float(lab_color_cv2[1]) + da_env
-    b_cal = float(lab_color_cv2[2]) + db_env
+    a_raw = float(lab_color_cv2[1])
+    b_raw = float(lab_color_cv2[2])
     
     # Normalize to Standard CIELAB (used by our AI models)
-    l_std, a_std, b_std = cv2_to_std_lab(l_raw, a_cal, b_cal)
-    
-    # Apply L-Boost
-    l_std = min(100.0, l_std + l_boost)
+    l_std, a_std, b_std = cv2_to_std_lab(l_raw, a_raw, b_raw)
     
     # MST + Seasonal classification using lightweight KNN (no scikit-learn)
     # Nearest MST index
@@ -300,12 +222,30 @@ def analyze_color(image, landmarks):
         votes[lab] = votes.get(lab, 0) + 1
     season_12 = max(votes, key=votes.get) if votes else None
     
-    # Undertone extraction (still useful for matching logic)
+    # --- Undertone Extraction ---
+    # Default to face's a/b values
+    u_a, u_b = a_std, b_std
+    
+    # If wrist image provided, use it for pinpoint accuracy
+    if wrist_image is not None:
+        wh, ww, _ = wrist_image.shape
+        # Sample the center 30% of the wrist image
+        cy, cx = wh // 2, ww // 2
+        ry, rx = int(wh * 0.15), int(ww * 0.15)
+        wrist_patch = wrist_image[max(0, cy-ry):min(wh, cy+ry), max(0, cx-rx):min(ww, cx+rx)]
+        
+        if wrist_patch.size > 0:
+            w_b = np.median(wrist_patch[:, :, 0])
+            w_g = np.median(wrist_patch[:, :, 1])
+            w_r = np.median(wrist_patch[:, :, 2])
+            wrist_lab_cv2 = cv2.cvtColor(np.uint8([[[w_b, w_g, w_r]]]), cv2.COLOR_BGR2LAB)[0][0]
+            _, u_a, u_b = cv2_to_std_lab(float(wrist_lab_cv2[0]), float(wrist_lab_cv2[1]), float(wrist_lab_cv2[2]))
+
     # Natural balance: Warm has high b_std compared to a_std
     # Human skin is inherently yellow-leaning. If a_std >= b_std, it's almost certainly Cool.
     undertone = "Neutral"
-    if b_std > a_std + 4: undertone = "Warm"
-    elif a_std >= b_std - 1: undertone = "Cool"
+    if u_b > u_a + 4: undertone = "Warm"
+    elif u_a >= u_b - 1: undertone = "Cool"
         
     return hex_code, undertone, (l_std, a_std, b_std), season_12, mst_label
 
@@ -427,16 +367,24 @@ def chroma_skin():
     if request.method == 'POST':
         if 'image' in request.files:
             file = request.files['image']
+            wrist_file = request.files.get('wrist_image')
+            
             if file.filename != '':
                 filepath = os.path.join(UPLOAD_FOLDER, file.filename)
                 file.save(filepath)
                 image = cv2.imread(filepath)
                 
+                wrist_image = None
+                if wrist_file and wrist_file.filename != '':
+                    wrist_filepath = os.path.join(UPLOAD_FOLDER, 'wrist_' + wrist_file.filename)
+                    wrist_file.save(wrist_filepath)
+                    wrist_image = cv2.imread(wrist_filepath)
+                
                 mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
                 detection_result = detector.detect(mp_image)
                 
                 if detection_result.face_landmarks:
-                    skin_hex, undertone, lab_std, season_12, mst_label = analyze_color(image, detection_result.face_landmarks[0])
+                    skin_hex, undertone, lab_std, season_12, mst_label = analyze_color(image, detection_result.face_landmarks[0], wrist_image=wrist_image)
                     
                     # Update User Profile
                     current_user.skin_hex = skin_hex

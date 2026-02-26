@@ -85,21 +85,8 @@
             {% if matches %}
             <div class="space-y-4">
                 {% for match in matches %}
-                <div onclick="updateSwatch('foundation', '{{ match.hex_code }}')"
-                    class="cursor-pointer bg-white p-4 rounded-xl flex items-center space-x-4 shadow-sm border {% if loop.first %}border-muted-gold ring-1 ring-muted-gold ring-opacity-50{% else %}border-gray-100{% endif %} hover:border-muted-gold transition-colors transform hover:scale-[1.01] relative">
-                    {% if loop.first %}
-                    <div class="absolute -top-2 -right-2 flex flex-col items-end">
-                        <span
-                            class="bg-muted-gold text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm z-10">EXACT
-                            MATCH</span>
-                        <span
-                            class="bg-white text-muted-gold text-[9px] px-1 border border-muted-gold rounded mt-0.5 font-bold">{{
-                            match.match_score }}% Confidence</span>
-                    </div>
-                    {% else %}
-                    <span class="absolute top-2 right-2 text-[9px] text-gray-400 font-mono">{{ match.match_score }}%
-                        Match</span>
-                    {% endif %}
+                <div onclick="updateSwatch('foundation', '{{ match.hex_code }}', this)"
+                    class="cursor-pointer bg-white p-4 rounded-xl flex items-center space-x-4 shadow-sm border {% if loop.first %}border-muted-gold ring-1 ring-muted-gold ring-opacity-50{% else %}border-gray-100{% endif %} hover:border-muted-gold transition-colors transform hover:scale-[1.01] relative swatch-card-f">
                     <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
                         <div class="w-full h-full" data-bg-color="{{ match.hex_code }}"></div>
                     </div>
@@ -117,7 +104,7 @@
             </div>
             {% else %}
             <div class="bg-gray-50 border border-gray-100 rounded-xl p-4 text-center text-sm text-gray-500">
-                No high-confidence foundation matches found for this brand.
+                No foundation shades available.
             </div>
             {% endif %}
 
@@ -126,21 +113,8 @@
             {% if concealer_matches %}
             <div class="space-y-4">
                 {% for match in concealer_matches %}
-                <div onclick="updateSwatch('concealer', '{{ match.hex_code }}')"
-                    class="cursor-pointer bg-white p-4 rounded-xl flex items-center space-x-4 shadow-sm border {% if loop.first %}border-dusty-rose ring-1 ring-dusty-rose ring-opacity-50{% else %}border-gray-100{% endif %} hover:border-dusty-rose transition-colors transform hover:scale-[1.01] relative">
-                    {% if loop.first %}
-                    <div class="absolute -top-2 -right-2 flex flex-col items-end">
-                        <span
-                            class="bg-dusty-rose text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm z-10">TOP
-                            PICK</span>
-                        <span
-                            class="bg-white text-dusty-rose text-[9px] px-1 border border-dusty-rose rounded mt-0.5 font-bold">{{
-                            match.match_score }}% Precision</span>
-                    </div>
-                    {% else %}
-                    <span class="absolute top-2 right-2 text-[9px] text-gray-400 font-mono">{{ match.match_score }}%
-                        Match</span>
-                    {% endif %}
+                <div onclick="updateSwatch('concealer', '{{ match.hex_code }}', this)"
+                    class="cursor-pointer bg-white p-4 rounded-xl flex items-center space-x-4 shadow-sm border {% if loop.first %}border-dusty-rose ring-1 ring-dusty-rose ring-opacity-50{% else %}border-gray-100{% endif %} hover:border-dusty-rose transition-colors transform hover:scale-[1.01] relative swatch-card-c">
                     <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
                         <div class="w-full h-full" data-bg-color="{{ match.hex_code }}"></div>
                     </div>
@@ -156,7 +130,7 @@
             </div>
             {% else %}
             <div class="bg-gray-50 border border-gray-100 rounded-xl p-4 text-center text-sm text-gray-500">
-                No high-confidence concealer matches found for this brand.
+                No concealer shades available.
             </div>
             {% endif %}
             {% endif %}
@@ -253,9 +227,28 @@
                 ctx.stroke();
             }
 
-            window.updateSwatch = function (type, hex) {
+            window.updateSwatch = function (type, hex, element) {
                 if (type === 'foundation') currentFoundationHex = hex;
                 if (type === 'concealer') currentConcealerHex = hex;
+
+                if (element) {
+                    if (type === 'foundation') {
+                        document.querySelectorAll('.swatch-card-f').forEach(el => {
+                            el.classList.remove('border-muted-gold', 'ring-1', 'ring-muted-gold', 'ring-opacity-50');
+                            el.classList.add('border-gray-100');
+                        });
+                        element.classList.remove('border-gray-100');
+                        element.classList.add('border-muted-gold', 'ring-1', 'ring-muted-gold', 'ring-opacity-50');
+                    } else if (type === 'concealer') {
+                        document.querySelectorAll('.swatch-card-c').forEach(el => {
+                            el.classList.remove('border-dusty-rose', 'ring-1', 'ring-dusty-rose', 'ring-opacity-50');
+                            el.classList.add('border-gray-100');
+                        });
+                        element.classList.remove('border-gray-100');
+                        element.classList.add('border-dusty-rose', 'ring-1', 'ring-dusty-rose', 'ring-opacity-50');
+                    }
+                }
+
                 draw();
             }
         }

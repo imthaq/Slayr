@@ -13,23 +13,41 @@
         class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
         <!-- Input Section -->
         <div class="space-y-6">
+            <!-- Selfie Upload (Required) -->
             <div id="drop-zone" class="relative group cursor-pointer"
                 data-uploaded-image="{{ url_for('static', filename='uploads/' + uploaded_image) if uploaded_image else '' }}">
                 <div
                     class="absolute -inset-1 bg-gradient-to-r from-muted-gold to-dusty-rose rounded-[30px] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
                 </div>
                 <div
-                    class="relative w-full h-64 bg-white/80 rounded-[30px] border-2 border-dashed border-muted-gold/50 flex flex-col items-center justify-center space-y-4 hover:bg-white transition-all duration-300 overflow-hidden">
+                    class="relative w-full h-48 bg-white/80 rounded-[30px] border-2 border-dashed border-muted-gold/50 flex flex-col items-center justify-center space-y-4 hover:bg-white transition-all duration-300 overflow-hidden">
                     <img id="chroma-preview" class="hidden absolute inset-0 w-full h-full object-cover opacity-50" />
                     <div class="relative z-10 flex flex-col items-center">
-                        <svg class="w-12 h-12 text-muted-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-10 h-10 text-muted-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                 d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
                             </path>
                         </svg>
-                        <p class="text-gray-500 font-medium mt-2">Upload Selfie</p>
+                        <p class="text-gray-500 font-medium mt-2">Upload Selfie (Required)</p>
                     </div>
                     <input type="file" name="image" id="file-input" class="hidden" accept="image/*" required>
+                </div>
+            </div>
+
+            <!-- Wrist Upload (Optional) -->
+            <div id="wrist-drop-zone" class="relative group cursor-pointer">
+                <div
+                    class="relative w-full h-32 bg-gray-50 rounded-[20px] border-2 border-dashed border-gray-300 flex flex-col items-center justify-center space-y-2 hover:bg-white hover:border-dusty-rose transition-all duration-300 overflow-hidden">
+                    <img id="wrist-preview" class="hidden absolute inset-0 w-full h-full object-cover opacity-50" />
+                    <div class="relative z-10 flex flex-col items-center">
+                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        <p class="text-xs text-gray-500 font-medium mt-1">Upload Inner Wrist (Optional)</p>
+                        <p class="text-[10px] text-gray-400">For pinpoint undertone accuracy</p>
+                    </div>
+                    <input type="file" name="wrist_image" id="wrist-input" class="hidden" accept="image/*">
                 </div>
             </div>
 
@@ -95,21 +113,30 @@
     const dropZone = document.getElementById('drop-zone');
     const preview = document.getElementById('chroma-preview');
 
-    dropZone.addEventListener('click', () => fileInput.click());
+    const wristInput = document.getElementById('wrist-input');
+    const wristDropZone = document.getElementById('wrist-drop-zone');
+    const wristPreview = document.getElementById('wrist-preview');
 
-    fileInput.addEventListener('change', () => {
-        if (fileInput.files.length) {
-            const file = fileInput.files[0];
-            dropZone.classList.add('border-green-500');
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                preview.src = e.target.result;
-                preview.classList.remove('hidden');
-                dropZone.querySelector('p').innerText = file.name;
+    function setupUpload(zone, input, imgPreview) {
+        zone.addEventListener('click', () => input.click());
+        input.addEventListener('change', () => {
+            if (input.files.length) {
+                const file = input.files[0];
+                zone.classList.add('border-green-500');
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imgPreview.src = e.target.result;
+                    imgPreview.classList.remove('hidden');
+                    const textP = zone.querySelector('p');
+                    if (textP) textP.innerText = file.name;
+                }
+                reader.readAsDataURL(file);
             }
-            reader.readAsDataURL(file);
-        }
-    });
+        });
+    }
+
+    setupUpload(dropZone, fileInput, preview);
+    setupUpload(wristDropZone, wristInput, wristPreview);
 
     const initialImage = dropZone.dataset.uploadedImage;
     if (initialImage) {
