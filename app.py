@@ -5,6 +5,8 @@ import numpy as np
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
+from sklearn.cluster import KMeans
+from sklearn.neighbors import KNeighborsClassifier
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -20,17 +22,6 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
-
-# --- Recommendation Rules (JSON-configurable) ---
-RULES_PATH = os.path.join(os.path.dirname(__file__), 'recommendation_rules.json')
-try:
-    with open(RULES_PATH, 'r', encoding='utf-8') as f:
-        RULES = json.load(f)
-except Exception:
-    RULES = {}
-
-COLOR_CFG = RULES.get("color_analysis", {})
-SMART_MATCH_CFG = RULES.get("smart_match", {})
 
 # --- Configuration ---
 UPLOAD_FOLDER = 'static/uploads'
@@ -80,47 +71,23 @@ options = vision.FaceLandmarkerOptions(
 )
 detector = vision.FaceLandmarker.create_from_options(options)
 
-# --- Lightweight "Models": KNN in pure NumPy (no SciPy / scikit-learn) ---
-MST_X = np.array([item[:3] for item in MST_LAB], dtype=np.float32)
-SEASON_X = np.array([item[:3] for item in SEASON_LAB], dtype=np.float32)
-SEASON_Y = [item[3] for item in SEASON_LAB]
+ # --- AI Models: Skin Tone & Season Classifiers ---
+def setup_classifiers():
+    # Standard CIELAB data from reference_data.py
+    X_mst = [item[:3] for item in MST_LAB]
+    y_mst = list(range(len(MST_LAB)))
+    mst_clf = KNeighborsClassifier(n_neighbors=1)
+    mst_clf.fit(X_mst, y_mst)
+    
+    X_season = [item[:3] for item in SEASON_LAB]
+    y_season = [item[3] for item in SEASON_LAB]
+    # Use k=3 for seasonal classification to be more robust against outliers
+    season_clf = KNeighborsClassifier(n_neighbors=3)
+    season_clf.fit(X_season, y_season)
+    
+    return mst_clf, season_clf
 
-
-def _euclidean_distances(x, X):
-    x = np.asarray(x, dtype=np.float32).reshape(1, -1)
-    X = np.asarray(X, dtype=np.float32)
-    d = X - x
-    return np.sqrt(np.sum(d * d, axis=1))
-
-
-def knn_predict_label(x, X, y, k=3):
-    if len(y) == 0:
-        return None
-    dists = _euclidean_distances(x, X)
-    k = int(max(1, min(k, len(y))))
-    idx = np.argsort(dists)[:k]
-    votes = {}
-    for i in idx:
-        label = y[int(i)]
-        votes[label] = votes.get(label, 0) + 1
-    # deterministic tie-break: smallest total distance among tied labels
-    top_vote = max(votes.values())
-    tied = [lab for lab, c in votes.items() if c == top_vote]
-    if len(tied) == 1:
-        return tied[0]
-    best_label = None
-    best_sum = None
-    for lab in tied:
-        s = float(np.sum([dists[int(i)] for i in idx if y[int(i)] == lab]))
-        if best_sum is None or s < best_sum:
-            best_sum = s
-            best_label = lab
-    return best_label
-
-
-def knn_predict_index(x, X):
-    dists = _euclidean_distances(x, X)
-    return int(np.argmin(dists))
+mst_clf, season_clf = setup_classifiers()
 
 # --- Logic (Helpers: Face Shape) ---
 RECOMMENDATIONS = {
@@ -131,8 +98,6 @@ RECOMMENDATIONS = {
         "Diamond": "Wide cheekbones. Highlight them, soften the chin.",
         "Oblong": "Long face. Add width with curls or oversized frames."
 }
-
-FACE_SHAPE_RECS = RULES.get("face_shape_recommendations", RECOMMENDATIONS)
 
 def analyze_face_shape(landmarks, image_width, image_height, matrix=None):
     coords = {}
@@ -258,23 +223,17 @@ def analyze_color(image, landmarks):
     face_pts = np.array([[int(landmarks[i].x * w), int(landmarks[i].y * h)] for i in [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109]])
     face_mask = np.zeros((h, w), dtype=np.uint8)
     cv2.fillPoly(face_mask, [face_pts], 255)
-    # Configurable erosion to get only "Pure Skin" zones
-    kernel_size = int(COLOR_CFG.get("face_mask_kernel_size", 15))
-    erode_iters = int(COLOR_CFG.get("face_mask_erode_iterations", 2))
-    face_mask = cv2.erode(face_mask, np.ones((kernel_size, kernel_size), np.uint8), iterations=erode_iters)
+    # Erode more aggressively (20 iterations) to get only "Pure Skin" zones
+    face_mask = cv2.erode(face_mask, np.ones((15,15), np.uint8), iterations=2)
     
     image_norm = apply_white_balance(image.copy(), face_mask)
     
     # 1.5 Adaptive L-Boost (K-Beauty / Luminous Lighting Compensation)
     # If the face is overall bright, users expect a "fairer" match.
     face_mean = np.mean(image[face_mask > 0])
-    l_boost = 0.0
-    for rule in COLOR_CFG.get("l_boost_rules", []):
-        try:
-            if face_mean >= float(rule.get("min_mean", 0.0)):
-                l_boost = max(l_boost, float(rule.get("boost", 0.0)))
-        except Exception:
-            continue
+    l_boost = 0
+    if face_mean > 200: l_boost = 3.0
+    elif face_mean > 170: l_boost = 1.5
     
     # 2. Eye-White Calibration Offset
     # Sample eye-white to find global lighting bias
@@ -294,8 +253,7 @@ def analyze_color(image, landmarks):
             # 3. Precision Variance Filtering
             # Tightened threshold (22) to avoid hair, blush, and highlights.
             std = np.std(patch)
-            std_threshold = float(COLOR_CFG.get("roi_std_max", 22.0))
-            if std < std_threshold: 
+            if std < 22: 
                 # 4. Gaussian-Weighted Spatial Sampling
                 ph, pw, _ = patch.shape
                 y_grid, x_grid = np.ogrid[:ph, :pw]
@@ -310,8 +268,7 @@ def analyze_color(image, landmarks):
                 avg_r = np.median(patch[:, :, 2])
                 rois.append(np.array([avg_b, avg_g, avg_r]))
             
-    if not rois:
-        return None, None, (0.0, 0.0, 0.0), None, None
+    if not rois: return "#D4A373", "Neutral", (60.0, 0.0, 0.0), "Soft Autumn", "MST 5"
 
     # Luminous Sampling: Aggregating the "Best" 75% zone
     rois = np.array(rois)
@@ -338,10 +295,10 @@ def analyze_color(image, landmarks):
     # Apply L-Boost
     l_std = min(100.0, l_std + l_boost)
     
-    # MST + Seasonal classification (KNN; data-driven, lightweight)
-    mst_level = knn_predict_index([l_std, a_std, b_std], MST_X)
+    # MST + Seasonal classification
+    mst_level = mst_clf.predict([[l_std, a_std, b_std]])[0]
     mst_label = get_mst_label(mst_level)
-    season_12 = knn_predict_label([l_std, a_std, b_std], SEASON_X, SEASON_Y, k=3)
+    season_12 = season_clf.predict([[l_std, a_std, b_std]])[0]
     
     # Undertone extraction (still useful for matching logic)
     # Natural balance: Warm has high b_std compared to a_std
@@ -394,20 +351,6 @@ def swatch_face(image, landmarks, foundation_hex, concealer_hex):
     
     return image
 
-
-def is_undertone_compatible(user_undertone, shade_hue):
-    if not user_undertone or not shade_hue:
-        return True
-    u = user_undertone.lower()
-    h = shade_hue.lower()
-    if u == "warm":
-        return any(key in h for key in ["warm", "gold", "yellow", "olive"])
-    if u == "cool":
-        return any(key in h for key in ["cool", "pink", "rose"])
-    if u == "neutral":
-        return "neutral" in h or (not any(key in h for key in ["warm", "cool", "pink", "rose", "gold", "yellow", "olive"]))
-    return True
-
 PALETTES = {
     "Spring": {"colors": ["#FFD700", "#FF7F50", "#98FB98", "#E6E6FA"], "desc": "Fresh, bright, and warm colors."},
     "Summer": {"colors": ["#B0E0E6", "#D8BFD8", "#F08080", "#778899"], "desc": "Soft, cool, and muted colors."},
@@ -427,9 +370,6 @@ PALETTES = {
     "True Winter": {"colors": ["#0000FF", "#FF0000", "#FFFFFF", "#000000"], "desc": "True cool, high contrast colors."},
     "Bright Winter": {"colors": ["#00FFFF", "#FF00FF", "#00FF00", "#FFFFFF"], "desc": "Bright, cool, and icy tones."}
 }
-
-PALETTES = RULES.get("palettes", PALETTES)
-SEASON_VIBES = RULES.get("season_vibes", {})
 
 # --- Routes ---
 
@@ -497,10 +437,8 @@ def chroma_skin():
                 
                 if detection_result.face_landmarks:
                     skin_hex, undertone, lab_std, season_12, mst_label = analyze_color(image, detection_result.face_landmarks[0])
-                    if not skin_hex:
-                        flash('We could not confidently read your skin tone. Please try a clearer selfie with even lighting and no heavy filters.')
-                        return render_template('features/chroma_skin.html')
                     
+                    # Update User Profile
                     current_user.skin_hex = skin_hex
                     current_user.undertone = undertone
                     db.session.commit()
@@ -536,10 +474,6 @@ def smart_match():
                 
                 if detection_result.face_landmarks:
                     hex_code, undertone, lab_std, season_12, mst_label = analyze_color(image, detection_result.face_landmarks[0])
-                    if not hex_code:
-                        flash('We could not confidently analyze your skin tone for Smart Match. Please try a clearer selfie with even lighting.')
-                        return render_template('features/smart_match.html', brands=brands, matches=None)
-
                     skin_hex = hex_code
                     l_user, a_user, b_user = lab_std
                     
@@ -552,30 +486,18 @@ def smart_match():
                     if foundations:
                         f_labs = np.array([[f.l, f.a, f.b] for f in foundations])
                         
+                        # Calculate Base Distances
                         distances = delta_e_cie2000_vec(lab_std, f_labs)
-                        penalty_val = float(SMART_MATCH_CFG.get("undertone_penalty", 0.0))
-                        if penalty_val > 0 and undertone:
-                            penalties = np.array([
-                                penalty_val if not is_undertone_compatible(undertone, (f.hue or '')) else 0.0
-                                for f in foundations
-                            ])
-                            distances = distances + penalties
-
-                        max_acceptable = float(SMART_MATCH_CFG.get("max_acceptable_distance", 15.0))
-                        distance_scale = float(SMART_MATCH_CFG.get("distance_confidence_scale", 3.5))
-                        exact_max = float(SMART_MATCH_CFG.get("exact_match_max_distance", 5.0))
-
-                        sorted_indices = np.argsort(distances)
-                        filtered_indices = [i for i in sorted_indices if distances[i] <= max_acceptable]
-                        top_indices = filtered_indices[:3]
-
+                        
+                        # Sort and pick top 3
+                        top_indices = np.argsort(distances)[:3]
                         matches = []
                         for rank, i in enumerate(top_indices):
                             f = foundations[i]
-                            dist = float(distances[i])
-                            confidence = max(1, min(99, int(100 - (dist * distance_scale))))
+                            dist = distances[i]
+                            # Confidence calculation: 100 - (dist * penalty)
+                            confidence = max(1, min(99, int(100 - (dist * 3.5))))
                             f.match_score = confidence
-                            f.is_exact = dist <= exact_max
                             matches.append(f)
 
                     # --- Concealer Match (Lightness +5.0) ---
@@ -590,27 +512,15 @@ def smart_match():
                     if concealers:
                         c_labs = np.array([[c.l, c.a, c.b] for c in concealers])
                         
+                        # Distance to the ideal brightening concealer
                         c_dists = delta_e_cie2000_vec([target_l, a_user, b_user], c_labs)
-                        penalty_val = float(SMART_MATCH_CFG.get("undertone_penalty", 0.0))
-                        if penalty_val > 0 and undertone:
-                            penalties = np.array([
-                                penalty_val if not is_undertone_compatible(undertone, (c.hue or '')) else 0.0
-                                for c in concealers
-                            ])
-                            c_dists = c_dists + penalties
-
-                        max_acceptable = float(SMART_MATCH_CFG.get("max_acceptable_distance", 15.0))
-                        distance_scale = float(SMART_MATCH_CFG.get("distance_confidence_scale", 3.5))
-
-                        sorted_c_indices = np.argsort(c_dists)
-                        filtered_c_indices = [i for i in sorted_c_indices if c_dists[i] <= max_acceptable]
-                        top_c_indices = filtered_c_indices[:3]
-
+                        
+                        top_c_indices = np.argsort(c_dists)[:3]
                         concealer_matches = []
                         for rank, i in enumerate(top_c_indices):
                             c = concealers[i]
-                            dist = float(c_dists[i])
-                            confidence = max(1, min(99, int(100 - (dist * distance_scale))))
+                            dist = c_dists[i]
+                            confidence = max(1, min(99, int(100 - (dist * 3.5))))
                             c.match_score = confidence
                             concealer_matches.append(c)
                     
@@ -644,7 +554,6 @@ def morpho_face():
 def vibe_check():
     season = None
     palette = None
-    vibe = None
     uploaded_image = None
     
     if request.method == 'POST':
@@ -660,28 +569,17 @@ def vibe_check():
                 detection_result = detector.detect(mp_image)
                 
                 if detection_result.face_landmarks:
+                    # Reuse analyze_color logic
                     skin_hex, undertone, lab_std, season, mst_label = analyze_color(image, detection_result.face_landmarks[0])
-                    if not skin_hex:
-                        flash('We could not confidently analyze your season. Please try a clearer selfie with neutral background and lighting.')
-                        return render_template('features/vibe_check.html', season=None, palette=None, uploaded_image=uploaded_image)
-
-                    palette_key = season
-                    if palette_key not in PALETTES:
-                        if undertone == "Warm":
-                            palette_key = "Autumn"
-                        elif undertone == "Cool":
-                            palette_key = "Winter"
-                        else:
-                            palette_key = "Spring"
-
-                    palette = PALETTES.get(palette_key)
-                    vibe = SEASON_VIBES.get(season or palette_key)
                     
+                    palette = PALETTES.get(season, PALETTES["Winter"])
+                    
+                    # Update User Profile
                     current_user.undertone = undertone
                     current_user.skin_hex = skin_hex
                     db.session.commit()
     
-    return render_template('features/vibe_check.html', season=season, palette=palette, uploaded_image=uploaded_image, mst_label=locals().get("mst_label"), vibe=vibe)
+    return render_template('features/vibe_check.html', season=season, palette=palette, uploaded_image=uploaded_image)
 @app.route('/morpho-analyze', methods=['POST'])
 @login_required
 def morpho_analyze():
@@ -713,7 +611,7 @@ def morpho_analyze():
         
         return jsonify({
             'shape': face_shape,
-            'description': FACE_SHAPE_RECS.get(face_shape),
+            'description': RECOMMENDATIONS.get(face_shape),
             'image_url': url_for('static', filename='uploads/morpho_' + file.filename)
         })
         
@@ -901,8 +799,6 @@ STYLE_DATA = {
     "Oblong": {"lines": "Horizontal", "styles": ["Wide belts", "Oversized frames"]}
 }
 
-STYLE_DATA = RULES.get("style_lines", STYLE_DATA)
-
 @app.route('/capsule-wardrobe', methods=['GET', 'POST'])
 @login_required
 def capsule_wardrobe():
@@ -967,13 +863,9 @@ def analyze():
     
     face_landmarks_list = detection_result.face_landmarks[0]
     height, width, _ = image.shape
-
-    matrix = detection_result.facial_transformation_matrixes[0] if detection_result.facial_transformation_matrixes else None
-    face_shape = analyze_face_shape(face_landmarks_list, width, height, matrix)
+    
+    face_shape = analyze_face_shape(face_landmarks_list, width, height)
     skin_hex, undertone, brightness, season_12, mst_label = analyze_color(image, face_landmarks_list)
-
-    if not skin_hex:
-        return jsonify({"error": "Unable to confidently analyze skin tone from this image."}), 422
     
     current_user.face_shape = face_shape
     current_user.skin_hex = skin_hex
