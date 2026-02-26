@@ -5,8 +5,6 @@ import numpy as np
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
-from sklearn.cluster import KMeans
-from sklearn.neighbors import KNeighborsClassifier
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -27,6 +25,7 @@ login_manager.login_view = 'login'
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 MODEL_PATH = 'face_landmarker.task'
+
 
 # --- Models ---
 class User(UserMixin, db.Model):
@@ -60,6 +59,7 @@ def load_user(user_id):
 # --- Seeding ---
 # Seed logic replaced by sync_shades.py
 
+
 # --- MediaPipe Tasks Setup ---
 base_options = python.BaseOptions(model_asset_path=MODEL_PATH)
 options = vision.FaceLandmarkerOptions(
@@ -71,23 +71,10 @@ options = vision.FaceLandmarkerOptions(
 )
 detector = vision.FaceLandmarker.create_from_options(options)
 
- # --- AI Models: Skin Tone & Season Classifiers ---
-def setup_classifiers():
-    # Standard CIELAB data from reference_data.py
-    X_mst = [item[:3] for item in MST_LAB]
-    y_mst = list(range(len(MST_LAB)))
-    mst_clf = KNeighborsClassifier(n_neighbors=1)
-    mst_clf.fit(X_mst, y_mst)
-    
-    X_season = [item[:3] for item in SEASON_LAB]
-    y_season = [item[3] for item in SEASON_LAB]
-    # Use k=3 for seasonal classification to be more robust against outliers
-    season_clf = KNeighborsClassifier(n_neighbors=3)
-    season_clf.fit(X_season, y_season)
-    
-    return mst_clf, season_clf
-
-mst_clf, season_clf = setup_classifiers()
+# --- Lightweight MST / Season KNN (pure NumPy, no scikit-learn) ---
+MST_X = np.array([item[:3] for item in MST_LAB], dtype=np.float32)
+SEASON_X = np.array([item[:3] for item in SEASON_LAB], dtype=np.float32)
+SEASON_Y = [item[3] for item in SEASON_LAB]
 
 # --- Logic (Helpers: Face Shape) ---
 RECOMMENDATIONS = {
@@ -295,10 +282,23 @@ def analyze_color(image, landmarks):
     # Apply L-Boost
     l_std = min(100.0, l_std + l_boost)
     
-    # MST + Seasonal classification
-    mst_level = mst_clf.predict([[l_std, a_std, b_std]])[0]
+    # MST + Seasonal classification using lightweight KNN (no scikit-learn)
+    # Nearest MST index
+    diffs_mst = MST_X - np.array([l_std, a_std, b_std], dtype=np.float32)
+    dists_mst = np.sqrt(np.sum(diffs_mst * diffs_mst, axis=1))
+    mst_level = int(np.argmin(dists_mst))
     mst_label = get_mst_label(mst_level)
-    season_12 = season_clf.predict([[l_std, a_std, b_std]])[0]
+
+    # 3-NN majority vote for 12-season label
+    diffs_season = SEASON_X - np.array([l_std, a_std, b_std], dtype=np.float32)
+    dists_season = np.sqrt(np.sum(diffs_season * diffs_season, axis=1))
+    k = min(3, len(SEASON_Y))
+    nn_idx = np.argsort(dists_season)[:k]
+    votes = {}
+    for i in nn_idx:
+        lab = SEASON_Y[int(i)]
+        votes[lab] = votes.get(lab, 0) + 1
+    season_12 = max(votes, key=votes.get) if votes else None
     
     # Undertone extraction (still useful for matching logic)
     # Natural balance: Warm has high b_std compared to a_std
