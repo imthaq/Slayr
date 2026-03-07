@@ -3,31 +3,34 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<div class="glass-panel p-8 rounded-[30px] shadow-xl w-full max-w-md">
-    <h2 class="text-3xl font-serif text-center mb-6 text-gray-800">Welcome Back</h2>
+<div class="w-full max-w-md mx-auto">
+    <div class="glass-panel p-10 rounded-[40px] shadow-2xl form-card relative overflow-hidden backdrop-blur-2xl">
+        <h2 class="text-4xl font-sans font-bold text-center mb-2 text-gray-800 tracking-tight">Welcome Back</h2>
+        <p class="text-center text-gray-400 mb-10 font-serif italic stagger-1 fade-up">Your style journey continues</p>
 
-    <form method="POST" action="{{ url_for('login') }}" class="space-y-4">
-        <div>
-            <label class="block text-xs uppercase tracking-widest text-gray-500 mb-1">Username</label>
-            <input type="text" name="username"
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-muted-gold focus:ring-1 focus:ring-muted-gold outline-none transition-all"
-                required>
-        </div>
-        <div>
-            <label class="block text-xs uppercase tracking-widest text-gray-500 mb-1">Password</label>
-            <input type="password" name="password"
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-muted-gold focus:ring-1 focus:ring-muted-gold outline-none transition-all"
-                required>
-        </div>
+        <form method="POST" action="{{ url_for('login') }}" class="space-y-6">
+            <!-- Username/Email Input -->
+            <div class="input-group stagger-2 fade-up">
+                <input type="text" name="username" id="username" class="input-field" placeholder=" " required>
+                <label for="username" class="input-label">Email or Username</label>
+            </div>
 
-        <button type="submit"
-            class="w-full py-4 bg-gray-900 text-white rounded-full font-bold uppercase tracking-widest hover:bg-muted-gold transition-colors shadow-lg mt-6">
-            Login
-        </button>
-    </form>
+            <!-- Password Input -->
+            <div class="input-group stagger-3 fade-up">
+                <input type="password" name="password" id="password" class="input-field" placeholder=" " required>
+                <label for="password" class="input-label">Password</label>
+            </div>
 
-    <p class="text-center text-sm text-gray-500 mt-6">
-        Don't have an account? <a href="{{ url_for('signup') }}" class="text-dusty-rose underline">Sign Up</a>
-    </p>
+            <button type="submit"
+                class="w-full py-4 bg-gray-900 text-white rounded-2xl font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl mt-4 fade-up stagger-4">
+                Sign In
+            </button>
+        </form>
+
+        <p class="text-center text-sm text-gray-500 mt-8 fade-up stagger-5">
+            New here? <a href="{{ url_for('signup') }}" class="text-theme-pink font-bold hover:underline">Create
+                Account</a>
+        </p>
+    </div>
 </div>
 {% endblock %}

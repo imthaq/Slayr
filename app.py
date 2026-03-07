@@ -31,6 +31,9 @@ MODEL_PATH = 'face_landmarker.task'
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
+    email = db.Column(db.String(150), unique=True, nullable=True)
+    full_name = db.Column(db.String(150), nullable=True)
+    gender = db.Column(db.String(50), nullable=True)
     password = db.Column(db.String(150), nullable=False)
     # Stored Profile Data
     face_shape = db.Column(db.String(50))
@@ -55,6 +58,52 @@ class Foundation(db.Model):
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+# --- Stylist AI Logic (Mini ChatGPT for Style) ---
+SILA_KNOWLEDGE = {
+    "face": "Your facial architecture is the blueprint of your style. I recommend balancing your proportions—for example, angular frames soften a round face, while rounded styles complement a square jaw. Since you're in Slayr, our Morpho-Face analysis accurately maps your geometry to find exactly what harmonizes with your bone structure.",
+    "color": "Colors resonate with your natural undertone. If you're cool-toned, embrace silvers and jewel tones. Warm-toned individuals shine in gold, mocha, and olive greens. Our Vibe-Check feature can reveal your specific seasonal spectrum!",
+    "match": "Cosmetic matching is about finding your skin's perfect frequency. Aim for foundations that disappear into your neck line—never settle for 'almost'. Smart-Match uses AI to scan your tone and find the exact hex twins for your skin.",
+    "wardrobe": "A capsule wardrobe is about high-frequency pieces that mix seamlessly. Start with architectural basics: a crisp white shirt, perfectly tailored trousers, and a signature coat. Use our Capsule Wardrobe feature to curate a collection that echoes your aesthetic vibe.",
+    "grooming": "Precision is key. Align your beard or hair style with your face shape to create structural harmony. A well-groomed signature is your best accessory. My Grooming Blueprint can map your follicle alignment for the perfect finish.",
+    "glasses": "Finding the right frames is pure geometry. If you have an oval face, you're a canvas for almost any style. Square faces benefit from round or aviator shapes to soften the jaw. Check out Frame-Fit for a virtual synthesis of your ideal eyewear.",
+    "makeup": "Makeup should amplify your resonance, not mask it. Match your foundation to your jawline and choose lip tones that harmonize with your seasonal palette—Vibe-Check can help you pick the perfect shades!",
+    "hello": "Hi there! I'm Sila, your personal style synthesist. I've been analyzing the latest trends and architectural aesthetics. How can I help you refine your resonance today?",
+    "who": "I am Sila, Slayr's resident AI Stylist. I'm trained on thousands of style archetypes, geometric ratios, and chromatic frequencies. My purpose is to help you decipher your unique aesthetic blueprint.",
+    "thanks": "You're very welcome! It's my mission to see you looking your absolute best. Anything else on your mind?",
+    "default": "That's an interesting aesthetic question! While I'm still evolving my style-engine, I'd suggest focusing on your natural architecture and choosing pieces that make you feel like the most refined version of yourself. Have you tried my specific analysis features in the sidebar?"
+}
+
+@app.route('/sila-chat', methods=['POST'])
+def sila_chat():
+    data = request.get_json()
+    user_message = data.get('message', '').lower()
+    
+    response = SILA_KNOWLEDGE["default"]
+    
+    # Priority keyword matching
+    if any(k in user_message for k in ["thanks", "thank you", "thx"]):
+        response = SILA_KNOWLEDGE["thanks"]
+    elif any(k in user_message for k in ["hello", "hi", "hey", "hola"]):
+        response = SILA_KNOWLEDGE["hello"]
+    elif any(k in user_message for k in ["face", "shape", "morpho", "head"]):
+        response = SILA_KNOWLEDGE["face"]
+    elif any(k in user_message for k in ["color", "palette", "vibe", "undertone"]):
+        response = SILA_KNOWLEDGE["color"]
+    elif any(k in user_message for k in ["foundation", "match", "skin", "shade"]):
+        response = SILA_KNOWLEDGE["match"]
+    elif any(k in user_message for k in ["wardrobe", "clothes", "capsule", "outfit", "style"]):
+        response = SILA_KNOWLEDGE["wardrobe"]
+    elif any(k in user_message for k in ["beard", "hair", "grooming", "shave"]):
+        response = SILA_KNOWLEDGE["grooming"]
+    elif any(k in user_message for k in ["glasses", "frames", "eyewear", "specs"]):
+        response = SILA_KNOWLEDGE["glasses"]
+    elif any(k in user_message for k in ["makeup", "lipstick", "cosmetic", "beauty"]):
+        response = SILA_KNOWLEDGE["makeup"]
+    elif any(k in user_message for k in ["who", "what", "are you"]):
+        response = SILA_KNOWLEDGE["who"]
+
+    return jsonify({"response": response})
 
 # --- Seeding ---
 # Seed logic replaced by sync_shades.py
@@ -321,9 +370,10 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form.get('username')
+        identifier = request.form.get('username')
         password = request.form.get('password')
-        user = User.query.filter_by(username=username).first()
+        # Check by username or email
+        user = User.query.filter((User.username == identifier) | (User.email == identifier)).first()
         if user and check_password_hash(user.password, password):
             login_user(user)
             return redirect(url_for('dashboard'))
@@ -333,14 +383,23 @@ def login():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        username = request.form.get('username')
+        full_name = request.form.get('full_name')
+        email = request.form.get('email')
+        gender = request.form.get('gender')
         password = request.form.get('password')
-        if User.query.filter_by(username=username).first():
-            flash('Username already exists')
+        
+        # Simple username handle from email
+        username = email.split('@')[0] if email and '@' in email else email
+        
+        if User.query.filter_by(email=email).first():
+            flash('Email already registered')
             return redirect(url_for('signup'))
+        if User.query.filter_by(username=username).first():
+            # If username handle taken, append random or use full email
+            username = email
 
         hashed_pw = generate_password_hash(password)
-        new_user = User(username=username, password=hashed_pw)
+        new_user = User(username=username, email=email, full_name=full_name, gender=gender, password=hashed_pw)
         db.session.add(new_user)
         db.session.commit()
         
@@ -790,6 +849,11 @@ def capsule_wardrobe():
             ]
             
     return render_template('features/wardrobe.html', vibe=vibe, items=items, accent=accent_color, face_shape=face_shape)
+
+@app.route('/consultation')
+@login_required
+def consultation():
+    return render_template('features/consultation.html')
 
 @app.route('/analyze', methods=['POST'])
 @login_required

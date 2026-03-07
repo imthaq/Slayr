@@ -3,91 +3,149 @@
 {% block title %}Vibe-Check Styling{% endblock %}
 
 {% block content %}
-<div class="glass-panel p-8 rounded-[30px] shadow-xl w-full max-w-4xl">
-    <div class="text-center mb-10">
-        <h2 class="text-3xl font-serif text-gray-800">Vibe-Check <span class="text-dusty-rose">Styling</span></h2>
-        <p class="text-gray-500 mt-2">Discover your seasonal color palette.</p>
+<div class="w-full max-w-5xl mx-auto px-6 pb-12">
+    <!-- Header Section -->
+    <div class="text-center mb-10 stagger-1 fade-up">
+        <h2 class="text-3xl md:text-4xl font-sans font-bold text-gray-800 tracking-tighter mb-1 mt-4">
+            Vibe <span class="text-theme-purple">Check</span>
+        </h2>
+        <p class="text-gray-400 font-serif italic text-xs tracking-wide opacity-70">Synthesizing your seasonal color
+            frequency.</p>
     </div>
 
-    <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-        <!-- Input / Preview Section -->
-        <div class="space-y-6">
-            <div id="drop-zone" class="relative group cursor-pointer"
+    <form method="POST" enctype="multipart/form-data"
+        class="flex flex-col lg:flex-row gap-8 items-start justify-center">
+
+        <!-- Left Column: Compact Upload -->
+        <div class="w-full lg:w-72 space-y-4 stagger-2 fade-up">
+            <div id="drop-zone"
+                class="relative group cursor-pointer overflow-hidden rounded-[30px] aspect-square shadow-lg transition-all duration-500 hover:shadow-purple-100/50"
                 data-uploaded-image="{{ url_for('static', filename='uploads/' + uploaded_image) if uploaded_image else '' }}">
-                <div
-                    class="absolute -inset-1 bg-gradient-to-r from-dusty-rose to-muted-gold rounded-[30px] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
-                </div>
-                <div
-                    class="relative w-full h-80 bg-white/80 rounded-[30px] border-2 border-dashed border-dusty-rose/50 flex flex-col items-center justify-center space-y-4 hover:bg-white transition-all duration-300 overflow-hidden">
-                    <img id="vibe-preview" class="hidden absolute inset-0 w-full h-full object-cover opacity-90" />
 
-                    <div id="upload-placeholder"
-                        class="relative z-10 flex flex-col items-center {% if uploaded_image %}hidden{% endif %}">
-                        <svg class="w-12 h-12 text-dusty-rose" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
-                            </path>
-                        </svg>
-                        <p class="text-gray-500 font-medium mt-2">Upload Selfie to Analyze</p>
+                <div class="absolute inset-0 bg-gradient-to-br from-theme-pink/5 to-theme-purple/5"></div>
+
+                <div
+                    class="relative w-full h-full bg-white/10 backdrop-blur-md border-2 border-dashed border-white/40 flex flex-col items-center justify-center space-y-3 hover:bg-white/20 transition-all">
+                    <img id="vibe-preview" class="hidden absolute inset-0 w-full h-full object-cover z-0" />
+
+                    <div id="upload-placeholder" class="relative z-10 flex flex-col items-center p-4">
+                        <div class="w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-sm mb-3">
+                            <svg class="w-5 h-5 text-theme-purple" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                </path>
+                            </svg>
+                        </div>
+                        <p class="text-[9px] font-black uppercase tracking-[0.2em] text-gray-800">Analyze Portrait</p>
                     </div>
-
                     <input type="file" name="image" id="file-input" class="hidden" accept="image/*" {% if not season
                         %}required{% endif %}>
                 </div>
             </div>
 
             <button type="submit"
-                class="w-full py-4 bg-gray-900 text-white rounded-full font-bold uppercase tracking-widest hover:bg-dusty-rose transition-colors shadow-lg">
-                Analyze Vibe
+                class="w-full py-4 bg-gray-900 text-white rounded-[24px] font-black uppercase tracking-[0.3em] text-[10px] hover:bg-theme-purple transition-all shadow-md active:scale-95">
+                Scan Aura
             </button>
         </div>
 
-        <!-- Results Section -->
-        <div class="space-y-8">
+        <!-- Right Column: Results Portfolio -->
+        <div class="flex-1 max-w-xl stagger-3 fade-up">
             {% if season %}
-            <!-- Season Badge -->
-            <div class="flex flex-col items-center text-center space-y-4">
-                <div
-                    class="w-40 h-40 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-inner border-8 border-white animate-fade-in-up">
-                    <h3 class="text-3xl font-serif text-gray-800">{{ season }}</h3>
-                </div>
-                <p class="text-sm uppercase tracking-widest text-muted-gold">Your Season</p>
-                {% if mst_label %}
-                <p class="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Scale (Monk): {{ mst_label }}</p>
-                {% endif %}
-            </div>
-
-            <!-- Description -->
-            <div class="text-center md:text-left bg-white/50 p-6 rounded-2xl border border-white">
-                <h4 class="text-lg font-bold text-gray-800 mb-2">The {{ season }} Palette</h4>
-                <p class="text-gray-600 leading-relaxed text-sm">{{ palette.desc }}</p>
-            </div>
-
-            <!-- Color Swatches -->
-            <div class="space-y-3">
-                <h5 class="text-center md:text-left text-xs uppercase tracking-widest text-gray-400">Best Colors</h5>
-                <div class="flex flex-wrap justify-center md:justify-start gap-3">
-                    {% for color in palette.colors %}
-                    <div class="w-16 h-16 rounded-2xl shadow-md transition-transform hover:scale-110 cursor-pointer group relative ring-2 ring-white"
-                        style="background-color: {{ color }}">
-                        <span
-                            class="absolute inset-x-0 bottom-1 text-center text-[8px] text-white/90 opacity-0 group-hover:opacity-100 uppercase">{{
-                            color }}</span>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% else %}
-            <!-- Empty State -->
             <div
-                class="h-full flex flex-col items-center justify-center text-gray-400 opacity-60 text-center p-8 space-y-4">
-                <p class="italic max-w-xs">
-                    "Your vibe attracts your tribe. Let's find the colors that make you shine."
-                </p>
-                <div class="flex space-x-2">
-                    <div class="w-3 h-3 rounded-full bg-gray-300"></div>
-                    <div class="w-3 h-3 rounded-full bg-gray-300"></div>
-                    <div class="w-3 h-3 rounded-full bg-gray-300"></div>
+                class="glass-panel p-6 md:p-8 rounded-[40px] shadow-xl border-white/80 relative overflow-hidden aura-card">
+                <!-- Season Gradient Orb -->
+                <div class="absolute -top-10 -right-10 w-48 h-48 rounded-full blur-[80px] opacity-10"
+                    style="background-color: {{ palette.colors[0] if palette.colors else '#DA8EE2' }}"></div>
+
+                <div class="relative z-10 flex flex-col items-center text-center">
+                    <!-- Season Badge -->
+                    <div class="relative mb-6">
+                        <div
+                            class="w-28 h-28 md:w-32 md:h-32 rounded-full bg-white flex flex-col items-center justify-center shadow-lg border-4 border-white">
+                            <p class="text-[8px] uppercase font-black tracking-widest text-gray-400 mb-1">Detected</p>
+                            <h3 class="text-2xl font-sans font-black text-gray-800 uppercase">{{ season }}</h3>
+                        </div>
+                        {% if mst_label %}
+                        <div
+                            class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[7px] font-black uppercase tracking-widest px-2 py-1 rounded-full whitespace-nowrap">
+                            Tone Map: {{ mst_label }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Description Card -->
+                    <div
+                        class="bg-white/40 backdrop-blur-sm p-5 rounded-3xl border border-white/60 shadow-sm mb-8 w-full">
+                        <h4 class="text-xs font-black text-gray-800 uppercase tracking-widest mb-2">The {{ season }}
+                            Frequency</h4>
+                        <p class="text-gray-500 font-serif italic text-xs leading-relaxed">{{ palette.desc }}</p>
+                    </div>
+
+                    <!-- Color Swatches Portfolio -->
+                    <div class="w-full space-y-4">
+                        <p class="text-[9px] uppercase font-black tracking-widest text-gray-400">Harmonious Spectrum</p>
+                        <div class="flex flex-wrap justify-center gap-3">
+                            {% for color in palette.colors %}
+                            <div class="group relative w-12 h-12 rounded-2xl shadow-sm border-2 border-white transition-all hover:scale-110 cursor-help"
+                                style="background-color: {{ color }}">
+                                <div
+                                    class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[8px] font-bold px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none uppercase tracking-tighter">
+                                    {{ color }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Sila's Styling Guide -->
+                    <div
+                        class="mt-8 bg-gradient-to-br from-theme-purple/5 to-theme-pink/5 p-6 rounded-[30px] border border-white/70 shadow-sm relative overflow-hidden group w-full text-left">
+                        <div
+                            class="absolute -right-4 -bottom-4 w-24 h-24 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <img src="{{ url_for('static', filename='assets/sila_stylist.png') }}"
+                                class="w-full h-full object-contain">
+                        </div>
+                        <div class="flex items-start space-x-4 relative z-10">
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-white shadow-sm flex-shrink-0 border border-purple-50 overflow-hidden">
+                                <img src="{{ url_for('static', filename='assets/sila_stylist.png') }}"
+                                    class="w-full h-full object-contain">
+                            </div>
+                            <div>
+                                <p class="text-[9px] uppercase font-black tracking-widest text-theme-purple mb-1">
+                                    Stylist Signature</p>
+                                <p class="text-gray-600 font-serif italic text-xs leading-relaxed">
+                                    "The {{ season }} palette is all about depth. Incorporate these frequency tones into
+                                    your accessories first to transition your aura seamlessly."
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t border-white/40 w-full">
+                        <p class="text-gray-400 font-serif italic text-[10px]">
+                            Spectrum aligned. Discover your <a href="{{ url_for('smart_match') }}"
+                                class="text-theme-purple font-bold hover:underline transition-all">Cosmetic Keys</a>
+                            next.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            <div
+                class="glass-panel p-10 rounded-[40px] border-white/40 bg-white/20 relative overflow-hidden h-full flex flex-col justify-center min-h-[350px]">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-theme-purple/5 blur-[40px]"></div>
+
+                <div class="text-center max-w-sm mx-auto">
+                    <div
+                        class="w-16 h-16 bg-white rounded-3xl shadow-lg flex items-center justify-center text-3xl mx-auto mb-6">
+                        🎨</div>
+                    <h3 class="text-xl font-black tracking-tighter mb-4 text-gray-800">Chromatic Vibe</h3>
+                    <p class="text-gray-500 font-serif italic text-sm">Synchronize your seasonal spectral signature by
+                        uploading a portrait for neural chroma-analysis.</p>
                 </div>
             </div>
             {% endif %}
@@ -96,6 +154,11 @@
 </div>
 
 <script>
+    // Initial Appearance
+    setTimeout(() => {
+        updateSila("Let's find your seasonal spectral signature. Upload a portrait for <span class='text-theme-purple font-bold'>neural chroma-analysis</span>.");
+    }, 1500);
+
     const fileInput = document.getElementById('file-input');
     const dropZone = document.getElementById('drop-zone');
     const preview = document.getElementById('vibe-preview');
@@ -106,24 +169,27 @@
     fileInput.addEventListener('change', () => {
         if (fileInput.files.length) {
             const file = fileInput.files[0];
-            dropZone.classList.add('border-dusty-rose');
             const reader = new FileReader();
             reader.onload = (e) => {
                 preview.src = e.target.result;
                 preview.classList.remove('hidden');
                 uploadPlaceholder.classList.add('hidden');
-                // dropZone.querySelector('p').innerText = file.name;
+                updateSila("Aura scan ready! Tap <span class='text-theme-purple font-bold'>Scan Aura</span> to reveal your harmonious color spectrum.");
             }
             reader.readAsDataURL(file);
         }
     });
 
-    // Persist uploaded image from backend if available
     const initialImage = dropZone.dataset.uploadedImage;
     if (initialImage) {
         preview.src = initialImage;
         preview.classList.remove('hidden');
         uploadPlaceholder.classList.add('hidden');
+
+        // Sila reacts to results
+        setTimeout(() => {
+            updateSila("Your <span class='text-theme-purple font-bold'>{{ season }}</span> profile is captivating! Check my styling guide for your Harmonious Spectrum.");
+        }, 800);
     }
 </script>
 {% endblock %}

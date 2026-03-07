@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Style Consultation{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-4xl mx-auto space-y-8 animate-fade-in-up">
+    <!-- Consultation Header -->
+    <div class="text-center space-y-4">
+        <div class="inline-block relative">
+            <div class="absolute -inset-4 bg-theme-purple/20 rounded-full blur-2xl animate-pulse"></div>
+            <img src="{{ url_for('static', filename='assets/sila_stylist.png') }}"
+                class="w-32 h-32 md:w-48 md:h-48 object-contain relative z-10 drop-shadow-2xl" alt="Sila Stylist">
+        </div>
+        <h1 class="text-4xl md:text-6xl font-sans font-black text-gray-800 tracking-tighter">
+            Style <span
+                class="bg-gradient-to-r from-theme-purple to-theme-pink bg-clip-text text-transparent">Consultation</span>
+        </h1>
+        <p class="text-gray-500 font-serif italic text-lg max-w-2xl mx-auto">
+            "Ask me anything about your aesthetic blueprint, seasonal resonance, or cranial architecture. I am here to
+            synthesize your perfect look."
+        </p>
+    </div>
+
+    <!-- Chat Interface -->
+    <div
+        class="glass-panel rounded-[50px] shadow-2xl border border-white/40 overflow-hidden flex flex-col h-[600px] relative">
+        <div
+            class="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/80 to-transparent z-10 pointer-events-none">
+        </div>
+
+        <!-- Messages Area -->
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-8 pt-20 flex flex-col space-y-6 custom-scrollbar">
+            <!-- Initial Sila Message -->
+            <div class="flex justify-start">
+                <div
+                    class="max-w-[80%] bg-white/60 backdrop-blur-md p-6 rounded-[30px] rounded-tl-none border border-theme-purple/20 shadow-sm">
+                    <p class="text-gray-700 font-serif italic leading-relaxed">
+                        "Welcome to our private styling session. What aspect of your aesthetic resonance shall we refine
+                        today? You can ask about your seasonal colors, face shape styling, or building a high-frequency
+                        capsule wardrobe."
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="p-8 bg-white/40 backdrop-blur-xl border-t border-white/60">
+            <div class="relative flex items-center group">
+                <input type="text" id="consult-input" placeholder="Synthesize your question here..."
+                    class="w-full bg-white/50 border border-theme-purple/20 rounded-full px-8 py-5 pr-20 text-lg focus:outline-none focus:ring-4 focus:ring-theme-purple/10 transition-all font-sans shadow-inner placeholder:text-gray-400">
+                <button onclick="sendConsultRequest()"
+                    class="absolute right-3 bg-theme-purple text-white p-3 rounded-full hover:bg-theme-pink transition-all duration-300 shadow-lg hover:scale-110 active:scale-95 group-hover:shadow-theme-purple/20">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                            d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="mt-4 flex justify-center space-x-3">
+                <span class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Suggestions:</span>
+                <button onclick="useSuggestion('What frames fit my face shape?')"
+                    class="text-[10px] text-theme-purple hover:text-theme-pink transition-colors uppercase tracking-widest font-black">Frames</button>
+                <span class="text-gray-300">•</span>
+                <button onclick="useSuggestion('How do I match my foundations?')"
+                    class="text-[10px] text-theme-purple hover:text-theme-pink transition-colors uppercase tracking-widest font-black">Foundation</button>
+                <span class="text-gray-300">•</span>
+                <button onclick="useSuggestion('What colors suit cool undertones?')"
+                    class="text-[10px] text-theme-purple hover:text-theme-pink transition-colors uppercase tracking-widest font-black">Colors</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(218, 142, 226, 0.2);
+        border-radius: 10px;
+    }
+
+    @keyframes typing {
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-5px);
+        }
+    }
+
+    .typing-dot {
+        width: 6px;
+        height: 6px;
+        background: #DA8EE2;
+        border-radius: 50%;
+        display: inline-block;
+        animation: typing 1s infinite ease-in-out;
+    }
+</style>
+
+<script>
+    const chatMessages = document.getElementById('chat-messages');
+    const consultInput = document.getElementById('consult-input');
+
+    function useSuggestion(text) {
+        consultInput.value = text;
+        sendConsultRequest();
+    }
+
+    consultInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendConsultRequest();
+    });
+
+    async function sendConsultRequest() {
+        const query = consultInput.value.trim();
+        if (!query) return;
+
+        // User Message
+        const userDiv = document.createElement('div');
+        userDiv.className = "flex justify-end";
+        userDiv.innerHTML = `
+            <div class="max-w-[80%] bg-theme-purple text-white p-6 rounded-[30px] rounded-tr-none shadow-xl">
+                <p class="font-sans text-lg">${query}</p>
+            </div>
+        `;
+        chatMessages.appendChild(userDiv);
+        consultInput.value = '';
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // Sila Thinking State
+        const thinkingDiv = document.createElement('div');
+        thinkingDiv.className = "flex justify-start";
+        thinkingDiv.innerHTML = `
+            <div class="bg-white/40 p-6 rounded-[30px] rounded-tl-none border border-theme-purple/10">
+                <div class="flex space-x-1">
+                    <span class="typing-dot" style="animation-delay: 0.1s"></span>
+                    <span class="typing-dot" style="animation-delay: 0.2s"></span>
+                    <span class="typing-dot" style="animation-delay: 0.3s"></span>
+                </div>
+            </div>
+        `;
+        chatMessages.appendChild(thinkingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        try {
+            const response = await fetch('/sila-chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: query })
+            });
+            const data = await response.json();
+
+            thinkingDiv.remove();
+
+            const silaDiv = document.createElement('div');
+            silaDiv.className = "flex justify-start";
+            silaDiv.innerHTML = `
+                <div class="max-w-[80%] bg-white/60 backdrop-blur-md p-6 rounded-[30px] rounded-tl-none border border-theme-purple/20 shadow-sm animate-fade-in-up">
+                    <p class="text-gray-700 font-serif italic leading-relaxed text-lg">
+                        "${data.response}"
+                    </p>
+                </div>
+            `;
+            chatMessages.appendChild(silaDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Also update the global Sila bubble if it exists
+            if (window.updateSila) {
+                updateSila(data.response);
+            }
+        } catch (error) {
+            thinkingDiv.innerHTML = "<p class='text-red-400 text-xs'>Signal lost in the aesthetic cloud. Retry?</p>";
+        }
+    }
+
+    // Coordination with global Sila
+    setTimeout(() => {
+        if (window.updateSila) {
+            updateSila("I'm ready for our deep-dive consultation. What aesthetic mysteries shall we unlock?");
+        }
+    }, 1500);
+</script>
+{% endblock %}

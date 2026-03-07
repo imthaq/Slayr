@@ -3,105 +3,184 @@
 {% block title %}Chroma-Skin Analysis{% endblock %}
 
 {% block content %}
-<div class="glass-panel p-8 rounded-[30px] shadow-xl w-full max-w-4xl">
-    <div class="text-center mb-10">
-        <h2 class="text-3xl font-serif text-gray-800">Chroma-Skin <span class="text-muted-gold">Analysis</span></h2>
-        <p class="text-gray-500 mt-2">Discover your true skin tone and undertone.</p>
+<div class="w-full max-w-5xl mx-auto px-6 pb-12">
+    <!-- Header Section -->
+    <div class="text-center mb-8 stagger-1 fade-up">
+        <h2 class="text-3xl md:text-4xl font-sans font-bold text-gray-800 tracking-tighter mb-1 mt-4">
+            Chroma-Skin <span class="text-theme-purple">Studio</span>
+        </h2>
+        <p class="text-gray-400 font-serif italic text-xs tracking-wide opacity-70">Neural mapping complete.</p>
     </div>
 
     <form method="POST" action="{{ url_for('chroma_skin') }}" enctype="multipart/form-data"
-        class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-        <!-- Input Section -->
-        <div class="space-y-6">
-            <!-- Selfie Upload (Required) -->
-            <div id="drop-zone" class="relative group cursor-pointer"
+        class="flex flex-col lg:flex-row gap-8 items-start justify-center">
+
+        <!-- Left: Compact Input -->
+        <div class="w-full lg:w-72 space-y-4 stagger-2 fade-up">
+            <div id="drop-zone"
+                class="relative group cursor-pointer overflow-hidden rounded-[30px] aspect-square shadow-lg transition-all duration-500 hover:shadow-purple-100/50"
                 data-uploaded-image="{{ url_for('static', filename='uploads/' + uploaded_image) if uploaded_image else '' }}">
+
+                <div class="absolute inset-0 bg-gradient-to-br from-theme-pink/5 to-theme-purple/5"></div>
+
                 <div
-                    class="absolute -inset-1 bg-gradient-to-r from-muted-gold to-dusty-rose rounded-[30px] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
-                </div>
-                <div
-                    class="relative w-full h-48 bg-white/80 rounded-[30px] border-2 border-dashed border-muted-gold/50 flex flex-col items-center justify-center space-y-4 hover:bg-white transition-all duration-300 overflow-hidden">
-                    <img id="chroma-preview" class="hidden absolute inset-0 w-full h-full object-cover opacity-50" />
-                    <div class="relative z-10 flex flex-col items-center">
-                        <svg class="w-10 h-10 text-muted-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
-                            </path>
-                        </svg>
-                        <p class="text-gray-500 font-medium mt-2">Upload Selfie (Required)</p>
+                    class="relative w-full h-full bg-white/10 backdrop-blur-md border-2 border-dashed border-white/40 flex flex-col items-center justify-center space-y-3 hover:bg-white/20 transition-all">
+                    <img id="chroma-preview" class="hidden absolute inset-0 w-full h-full object-cover z-0" />
+
+                    <div id="scan-info-box" class="relative z-10 flex flex-col items-center p-4">
+                        <div class="w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-sm mb-3">
+                            <svg class="w-5 h-5 text-theme-purple" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                </path>
+                            </svg>
+                        </div>
+                        <p class="text-[9px] font-black uppercase tracking-[0.2em] text-gray-800">Upload Image</p>
                     </div>
                     <input type="file" name="image" id="file-input" class="hidden" accept="image/*" required>
                 </div>
             </div>
 
-            <!-- Wrist Upload (Optional) -->
-            <div id="wrist-drop-zone" class="relative group cursor-pointer">
+            <!-- Tiny Wrist Portal -->
+            <div id="wrist-drop-zone"
+                class="relative group cursor-pointer overflow-hidden rounded-2xl h-14 bg-white/30 backdrop-blur-sm border border-white/50 flex items-center px-4 space-x-3 hover:bg-white/50 transition-all duration-500">
                 <div
-                    class="relative w-full h-32 bg-gray-50 rounded-[20px] border-2 border-dashed border-gray-300 flex flex-col items-center justify-center space-y-2 hover:bg-white hover:border-dusty-rose transition-all duration-300 overflow-hidden">
-                    <img id="wrist-preview" class="hidden absolute inset-0 w-full h-full object-cover opacity-50" />
-                    <div class="relative z-10 flex flex-col items-center">
-                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                        <p class="text-xs text-gray-500 font-medium mt-1">Upload Inner Wrist (Optional)</p>
-                        <p class="text-[10px] text-gray-400">For pinpoint undertone accuracy</p>
-                    </div>
-                    <input type="file" name="wrist_image" id="wrist-input" class="hidden" accept="image/*">
+                    class="w-7 h-7 bg-white rounded-lg flex items-center justify-center shadow-xs border border-white/40">
+                    <svg class="w-4 h-4 text-theme-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
                 </div>
+                <span class="text-[8px] font-bold uppercase tracking-widest text-gray-500">Wrist (Optional)</span>
+                <img id="wrist-preview"
+                    class="hidden absolute right-2 w-10 h-10 rounded-lg object-cover border-2 border-white shadow-sm" />
+                <input type="file" name="wrist_image" id="wrist-input" class="hidden" accept="image/*">
             </div>
 
             <button type="submit"
-                class="w-full py-4 bg-gray-900 text-white rounded-full font-bold uppercase tracking-widest hover:bg-muted-gold transition-colors shadow-lg">
-                Start Analysis
+                class="w-full py-3.5 bg-gray-900 text-white rounded-[24px] font-black uppercase tracking-[0.3em] text-[9px] hover:bg-theme-purple transition-all shadow-md active:scale-95">
+                Interpret Tone
             </button>
         </div>
 
-        <!-- Info/Result Section -->
-        <div class="text-center md:text-left space-y-6">
+        <!-- Right: Slim Analysis Report -->
+        <div class="flex-1 max-w-xl stagger-3 fade-up h-full">
             {% if skin_hex %}
-            <div class="bg-white p-8 rounded-[30px] shadow-sm border border-gray-100">
-                <h3 class="text-xl font-serif text-gray-800 mb-4">Analysis Results</h3>
+            <div
+                class="glass-panel p-6 md:p-8 rounded-[40px] shadow-xl border-white/80 relative overflow-hidden aura-card">
+                <!-- Aura Glow -->
+                <div class="absolute -top-10 -right-10 w-48 h-48 rounded-full blur-[80px] opacity-15"
+                    style="background-color: {{ skin_hex }}"></div>
 
-                <div class="flex items-center space-x-6">
-                    <div class="w-24 h-24 rounded-full shadow-lg border-4 border-white" data-bg-color="{{ skin_hex }}">
+                <div class="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-8">
+                    <!-- Left Mini Column: Swatch -->
+                    <div class="flex flex-col items-center">
+                        <div class="relative">
+                            <div class="absolute -inset-6 rounded-full blur-[40px] opacity-10"
+                                style="background-color: {{ skin_hex }}"></div>
+                            <div class="w-28 h-28 md:w-32 md:h-32 shadow-lg relative z-10 rounded-[28px] border-[6px] border-white transform hover:rotate-3 transition-transform"
+                                style="background-color: {{ skin_hex }}"></div>
+                            <div
+                                class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded-full shadow-sm border border-gray-50 z-20">
+                                <p
+                                    class="text-[7px] font-black tracking-widest text-gray-400 uppercase whitespace-nowrap">
+                                    Core Tone</p>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-xs uppercase tracking-widest text-gray-400">Skin Tone</p>
-                        <p class="text-lg font-mono text-gray-800 mb-2">{{ skin_hex }}</p>
 
-                        {% if mst_label %}
-                        <p class="text-xs uppercase tracking-widest text-gray-400 mt-2">Scale (Monk)</p>
-                        <p class="text-lg font-serif text-gray-800 mb-2">{{ mst_label }}</p>
-                        {% endif %}
+                    <!-- Right Mini Column: Data -->
+                    <div class="flex-1 w-full space-y-4">
+                        <div class="flex items-center space-x-2 border-b border-gray-100 pb-3">
+                            <div class="w-1.5 h-1.5 rounded-full bg-green-400"></div>
+                            <span class="text-[8px] uppercase font-black tracking-[0.2em] text-gray-400">Synthesis
+                                Success</span>
+                        </div>
 
-                        <p class="text-xs uppercase tracking-widest text-gray-400 mt-2">Undertone</p>
-                        <p class="text-lg font-serif text-muted-gold">{{ undertone }}</p>
+                        <div class="bg-white/40 backdrop-blur-sm p-4 rounded-3xl border border-white/60 shadow-sm">
+                            <p class="text-[8px] uppercase tracking-[0.3em] text-gray-400 font-bold mb-1">Key Map</p>
+                            <p class="text-3xl font-mono font-black text-gray-800">{{ skin_hex.upper() }}</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div
+                                class="bg-white/40 backdrop-blur-sm p-3.5 rounded-2xl border border-white/60 shadow-sm text-center">
+                                <p class="text-[7px] uppercase tracking-[0.2em] text-gray-400 font-bold mb-1">Undertone
+                                </p>
+                                <p class="text-sm font-sans font-black text-theme-purple">{{ undertone }}</p>
+                            </div>
+                            {% if mst_label %}
+                            <div
+                                class="bg-white/40 backdrop-blur-sm p-3.5 rounded-2xl border border-white/60 shadow-sm text-center">
+                                <p class="text-[7px] uppercase tracking-[0.2em] text-gray-400 font-bold mb-1">Monk
+                                    Rating</p>
+                                <p class="text-sm font-sans font-black text-theme-pink">{{ mst_label }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Sila's Verdict -->
+                        <div
+                            class="mt-8 bg-gradient-to-br from-theme-purple/5 to-theme-pink/5 p-6 rounded-[30px] border border-white/70 shadow-sm relative overflow-hidden group">
+                            <div
+                                class="absolute -right-4 -bottom-4 w-24 h-24 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <img src="{{ url_for('static', filename='assets/sila_stylist.png') }}"
+                                    class="w-full h-full object-contain">
+                            </div>
+                            <div class="flex items-start space-x-4 relative z-10">
+                                <div
+                                    class="w-12 h-12 rounded-2xl bg-white shadow-sm flex-shrink-0 border border-purple-50 overflow-hidden">
+                                    <img src="{{ url_for('static', filename='assets/sila_stylist.png') }}"
+                                        class="w-full h-full object-contain">
+                                </div>
+                                <div>
+                                    <p class="text-[9px] uppercase font-black tracking-widest text-theme-purple mb-1">
+                                        Sila's Verdict</p>
+                                    <p class="text-gray-600 font-serif italic text-xs leading-relaxed">
+                                        "This {{ undertone }} base is a masterclass in chromatic balance. Focus on jewel
+                                        tones to elevate your natural resonance."
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer Navigation -->
+                        <div class="mt-4 text-center">
+                            <p class="text-gray-400 font-serif italic text-[10px]">
+                                Consult the <a href="{{ url_for('dashboard') }}"
+                                    class="text-theme-purple font-bold hover:underline">Studio Dashboard</a> for more.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
-            <script>
-                document.querySelectorAll('[data-bg-color]').forEach(el => {
-                    el.style.backgroundColor = el.dataset.bgColor;
-                });
-            </script>
-
-            <div class="bg-gray-50 p-6 rounded-[20px] text-sm text-gray-600">
-                <p>Profile updated! You can now use <strong>Smart Match</strong> to find foundations or
-                    <strong>Vibe-Check</strong> for color palettes.
-                </p>
-            </div>
 
             {% else %}
-            <h3 class="text-2xl font-serif text-gray-800">How it works</h3>
-            <p class="text-gray-600 leading-relaxed">
-                Our AI analyzes specific regions of your face to determine your exact skin hex code and undertone (Warm,
-                Cool, or Neutral).
-            </p>
-            <div class="flex items-center justify-center md:justify-start space-x-4 mt-6">
-                <div class="w-12 h-12 rounded-full bg-[#F3D5C3] border-2 border-white shadow-md"></div>
-                <div class="w-12 h-12 rounded-full bg-[#E5989B] border-2 border-white shadow-md -ml-4"></div>
-                <div class="w-12 h-12 rounded-full bg-[#D4A373] border-2 border-white shadow-md -ml-4"></div>
+            <div
+                class="glass-panel p-8 rounded-[40px] border-white/40 bg-white/20 relative overflow-hidden h-full flex flex-col justify-center min-h-[300px]">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-theme-purple/5 blur-[40px]"></div>
+
+                <h3 class="text-xl font-black tracking-tighter mb-6 text-gray-800">Neural <span
+                        class="text-theme-purple">Synthesis</span></h3>
+
+                <div class="space-y-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-xl">🎯
+                        </div>
+                        <p class="font-black text-gray-800 text-[10px] tracking-tight uppercase">Multi-Point Extraction
+                            Active</p>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-white/30">
+                        <div class="flex gap-2">
+                            {% for color in ['#fdf2f8', '#fbcfe8', '#f9a8d4', '#ec4899'] %}
+                            <div class="w-8 h-8 rounded-lg border border-white shadow-sm"
+                                style="background-color: {{ color }}"></div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
             </div>
             {% endif %}
         </div>
@@ -109,40 +188,52 @@
 </div>
 
 <script>
-    const fileInput = document.getElementById('file-input');
-    const dropZone = document.getElementById('drop-zone');
-    const preview = document.getElementById('chroma-preview');
+    const setupUpload = (zoneId, inputId, previewId) => {
+        const zone = document.getElementById(zoneId);
+        const input = document.getElementById(inputId);
+        const preview = document.getElementById(previewId);
 
-    const wristInput = document.getElementById('wrist-input');
-    const wristDropZone = document.getElementById('wrist-drop-zone');
-    const wristPreview = document.getElementById('wrist-preview');
-
-    function setupUpload(zone, input, imgPreview) {
-        zone.addEventListener('click', () => input.click());
-        input.addEventListener('change', () => {
-            if (input.files.length) {
-                const file = input.files[0];
-                zone.classList.add('border-green-500');
+        zone.onclick = () => input.click();
+        input.onchange = () => {
+            if (input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    imgPreview.src = e.target.result;
-                    imgPreview.classList.remove('hidden');
-                    const textP = zone.querySelector('p');
-                    if (textP) textP.innerText = file.name;
-                }
-                reader.readAsDataURL(file);
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                    const infoBox = zone.querySelector('#scan-info-box');
+                    if (infoBox) infoBox.style.display = 'none';
+
+                    // Sila reacts to upload
+                    if (zoneId === 'drop-zone') {
+                        updateSila("Beautiful shot! Now tap <span class='text-theme-purple font-bold'>Interpret Tone</span> to sync your spectrum.");
+                    } else {
+                        updateSila("Ooh, a wrist scan? That'll make my analysis <span class='text-theme-blue font-bold'>pinpoint accurate</span>!");
+                    }
+                };
+                reader.readAsDataURL(input.files[0]);
             }
-        });
-    }
+        };
+    };
 
-    setupUpload(dropZone, fileInput, preview);
-    setupUpload(wristDropZone, wristInput, wristPreview);
+    setupUpload('drop-zone', 'file-input', 'chroma-preview');
+    setupUpload('wrist-drop-zone', 'wrist-input', 'wrist-preview');
 
-    const initialImage = dropZone.dataset.uploadedImage;
-    if (initialImage) {
-        preview.src = initialImage;
+    const dz = document.getElementById('drop-zone');
+    if (dz && dz.dataset.uploadedImage) {
+        const preview = document.getElementById('chroma-preview');
+        preview.src = dz.dataset.uploadedImage;
         preview.classList.remove('hidden');
-        dropZone.classList.add('border-green-500');
+        dz.querySelector('#scan-info-box').style.display = 'none';
+
+        // Sila reacts to results
+        setTimeout(() => {
+            updateSila("Look at that resonance! Your <span class='text-theme-purple font-bold'>{{ undertone }}</span> base is stunning. Check my verdict below!");
+        }, 800);
     }
+
+    // Initial Appearance for this page
+    setTimeout(() => {
+        updateSila("Hi! I'm <span class='text-theme-purple font-bold'>Sila</span>. Upload a portrait so I can decipher your unique chromatic signature.");
+    }, 1500);
 </script>
 {% endblock %}

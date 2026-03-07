@@ -3,90 +3,168 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="w-full max-w-6xl space-y-12">
+<style>
+    /* Hide global stylist on dashboard for a cleaner look */
+    #sila-guide {
+        display: none !important;
+    }
+</style>
 
-    <!-- Welcome Header -->
-    <div class="flex justify-between items-end border-b border-gray-200 pb-6">
-        <div>
-            <h2 class="text-4xl font-serif text-gray-800">Hello, <span class="text-muted-gold">{{ user.username
-                    }}</span></h2>
-            <p class="text-gray-500 mt-2">Here is your beauty profile overview.</p>
+<div class="w-full max-w-6xl space-y-12">
+    <!-- Welcome Header & Sila Intro -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border-b border-gray-100 pb-10">
+        <div class="lg:col-span-8 flex items-center space-x-6">
+            <div class="relative group">
+                <div
+                    class="absolute -inset-1 bg-gradient-to-r from-theme-purple to-theme-pink rounded-full blur opacity-20 group-hover:opacity-40 transition duration-1000">
+                </div>
+                <div
+                    class="relative w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-white/50 backdrop-blur-sm">
+                    <img src="{{ url_for('static', filename='assets/sila_stylist.png') }}"
+                        class="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-700"
+                        alt="Sila Stylist">
+                </div>
+                <div
+                    class="absolute -bottom-2 -right-2 bg-theme-purple text-white text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg border-2 border-white">
+                    Sila • Stylist
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <h2 class="text-3xl md:text-5xl font-sans font-black text-gray-800 tracking-tighter">
+                    Hello, <span
+                        class="bg-gradient-to-r from-theme-purple to-theme-pink bg-clip-text text-transparent">{{
+                        user.full_name or user.username }}</span>
+                </h2>
+                <div class="bg-white/40 backdrop-blur-sm p-4 rounded-3xl border border-white max-w-lg relative">
+                    <div
+                        class="absolute -left-2 top-4 w-4 h-4 bg-white/40 border-l border-t border-white transform -rotate-45 hidden md:block">
+                    </div>
+                    <p class="text-gray-500 font-serif italic text-sm leading-relaxed">
+                        "I'm <span class="text-theme-purple font-bold">Sila</span>, your personal style synthesist.
+                        Let's map your unique spectral aura and find your perfect architectural fit today."
+                    </p>
+                </div>
+            </div>
         </div>
-        <div class="text-right">
-            <p class="text-xs uppercase tracking-widest text-gray-400">Face Shape</p>
-            <p class="text-xl font-serif">{{ user.face_shape or 'Not Analyzed' }}</p>
+
+        <div class="lg:col-span-4 flex justify-end gap-6">
+            <div
+                class="text-center p-4 bg-white/40 backdrop-blur-sm rounded-[30px] border border-white shadow-sm min-w-[120px]">
+                <p class="text-[8px] uppercase tracking-[0.2em] text-gray-400 font-black mb-1">Face Shape</p>
+                <p class="text-lg font-sans font-black text-theme-pink uppercase">{{ user.face_shape or 'N/A' }}</p>
+            </div>
+            <div
+                class="text-center p-4 bg-white/40 backdrop-blur-sm rounded-[30px] border border-white shadow-sm min-w-[120px]">
+                <p class="text-[8px] uppercase tracking-[0.2em] text-gray-400 font-black mb-1">Aura Map</p>
+                <p class="text-lg font-sans font-black text-theme-purple uppercase">Synthesized</p>
+            </div>
         </div>
     </div>
 
     <!-- Main Features Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-
         <!-- Smart Match Card -->
         <a href="{{ url_for('smart_match') }}"
-            class="group relative overflow-hidden rounded-[30px] bg-white shadow-sm hover:shadow-xl transition-all duration-300 aspect-[4/3] flex flex-col justify-end p-8">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
-            <!-- Placeholder Background -->
-            <div class="absolute inset-0 bg-gray-200 group-hover:scale-105 transition-transform duration-500"></div>
-
+            class="group relative overflow-hidden rounded-[40px] bg-white shadow-lg hover:shadow-2xl transition-all duration-500 aspect-[4/3] flex flex-col justify-end p-8 border border-white/40 backdrop-blur-md">
+            <div
+                class="absolute inset-0 bg-gradient-to-t from-theme-purple/60 to-transparent z-10 transition-opacity group-hover:opacity-80">
+            </div>
+            <div class="absolute inset-0 bg-gray-100 group-hover:scale-110 transition-transform duration-700"></div>
             <div class="relative z-20 text-white">
-                <h3 class="text-2xl font-serif mb-1">Smart Match</h3>
-                <p class="text-sm opacity-90">Find your perfect foundation shade.</p>
+                <h3 class="text-2xl font-bold mb-1">Smart Match</h3>
+                <p class="text-sm opacity-90 font-serif italic">Find your perfect foundation shade.</p>
             </div>
         </a>
 
         <!-- Chroma Skin Card -->
         <a href="{{ url_for('chroma_skin') }}"
-            class="group relative overflow-hidden rounded-[30px] bg-white shadow-sm hover:shadow-xl transition-all duration-300 aspect-[4/3] flex flex-col justify-end p-8">
-            <div class="absolute inset-0 bg-gradient-to-t from-muted-gold/80 to-transparent z-10"></div>
-            <div class="absolute inset-0 bg-cream group-hover:scale-105 transition-transform duration-500"></div>
-
+            class="group relative overflow-hidden rounded-[40px] bg-white shadow-lg hover:shadow-2xl transition-all duration-500 aspect-[4/3] flex flex-col justify-end p-8 border border-white/40 backdrop-blur-md">
+            <div
+                class="absolute inset-0 bg-gradient-to-t from-theme-pink/60 to-transparent z-10 transition-opacity group-hover:opacity-80">
+            </div>
+            <div class="absolute inset-0 bg-gray-100 group-hover:scale-110 transition-transform duration-700"></div>
             <div class="relative z-20 text-white">
-                <h3 class="text-2xl font-serif mb-1">Chroma-Skin</h3>
-                <p class="text-sm opacity-90">Undertone & Palette Analysis.</p>
+                <h3 class="text-2xl font-bold mb-1">Chroma-Skin</h3>
+                <p class="text-sm opacity-90 font-serif italic">Undertone & Palette Analysis.</p>
             </div>
         </a>
 
         <!-- Morpho Face Card -->
         <a href="{{ url_for('morpho_face') }}"
-            class="group relative overflow-hidden rounded-[30px] bg-white shadow-sm hover:shadow-xl transition-all duration-300 aspect-[4/3] flex flex-col justify-end p-8">
-            <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent z-10"></div>
-            <div class="absolute inset-0 bg-gray-300 group-hover:scale-105 transition-transform duration-500"></div>
-
+            class="group relative overflow-hidden rounded-[40px] bg-white shadow-lg hover:shadow-2xl transition-all duration-500 aspect-[4/3] flex flex-col justify-end p-8 border border-white/40 backdrop-blur-md">
+            <div
+                class="absolute inset-0 bg-gradient-to-t from-gray-800/60 to-transparent z-10 transition-opacity group-hover:opacity-80">
+            </div>
+            <div class="absolute inset-0 bg-gray-100 group-hover:scale-110 transition-transform duration-700"></div>
             <div class="relative z-20 text-white">
-                <h3 class="text-2xl font-serif mb-1">Morpho-Face</h3>
-                <p class="text-sm opacity-90">Geometric Face Shape Analysis.</p>
+                <h3 class="text-2xl font-bold mb-1">Morpho-Face</h3>
+                <p class="text-sm opacity-90 font-serif italic">Geometric Face Shape Analysis.</p>
             </div>
         </a>
 
         <!-- Vibe Check Card -->
         <a href="{{ url_for('vibe_check') }}"
-            class="group relative overflow-hidden rounded-[30px] bg-white shadow-sm hover:shadow-xl transition-all duration-300 aspect-[4/3] flex flex-col justify-end p-8">
-            <div class="absolute inset-0 bg-gradient-to-t from-dusty-rose/80 to-transparent z-10"></div>
-            <div class="absolute inset-0 bg-pink-100 group-hover:scale-105 transition-transform duration-500"></div>
-
+            class="group relative overflow-hidden rounded-[40px] bg-white shadow-lg hover:shadow-2xl transition-all duration-500 aspect-[4/3] flex flex-col justify-end p-8 border border-white/40 backdrop-blur-md">
+            <div
+                class="absolute inset-0 bg-gradient-to-t from-theme-yellow/60 to-transparent z-10 transition-opacity group-hover:opacity-80">
+            </div>
+            <div class="absolute inset-0 bg-gray-100 group-hover:scale-110 transition-transform duration-700"></div>
             <div class="relative z-20 text-white">
-                <h3 class="text-2xl font-serif mb-1">Vibe-Check</h3>
-                <p class="text-sm opacity-90">Seasonal Style Palette.</p>
+                <h3 class="text-2xl font-bold mb-1">Vibe-Check</h3>
+                <p class="text-sm opacity-90 font-serif italic">Seasonal Style Palette.</p>
             </div>
         </a>
 
-        <!-- Coming Soon Cards -->
-        <div
-            class="rounded-[30px] bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center p-8 opacity-60">
-            <p class="font-serif text-gray-400 text-lg">Frame-Fit</p>
-            <span class="text-xs uppercase bg-gray-200 px-2 py-1 rounded mt-2">Coming Soon</span>
-        </div>
-        <div
-            class="rounded-[30px] bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center p-8 opacity-60">
-            <p class="font-serif text-gray-400 text-lg">Grooming Blueprint</p>
-            <span class="text-xs uppercase bg-gray-200 px-2 py-1 rounded mt-2">Coming Soon</span>
-        </div>
-        <div
-            class="rounded-[30px] bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center p-8 opacity-60">
-            <p class="font-serif text-gray-400 text-lg">Capsule Wardrobe</p>
-            <span class="text-xs uppercase bg-gray-200 px-2 py-1 rounded mt-2">Coming Soon</span>
-        </div>
+        <!-- Frame Fit Card -->
+        <a href="{{ url_for('frame_fit') }}"
+            class="group relative overflow-hidden rounded-[40px] bg-white shadow-lg hover:shadow-2xl transition-all duration-500 aspect-[4/3] flex flex-col justify-end p-8 border border-white/40 backdrop-blur-md">
+            <div
+                class="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent z-10 transition-opacity group-hover:opacity-80">
+            </div>
+            <div class="absolute inset-0 bg-gray-100 group-hover:scale-110 transition-transform duration-700"></div>
+            <div class="relative z-20 text-white">
+                <h3 class="text-2xl font-bold mb-1">Frame-Fit</h3>
+                <p class="text-sm opacity-90 font-serif italic">Eyewear Architecture.</p>
+            </div>
+        </a>
 
+        <!-- Capsule Wardrobe Card -->
+        <a href="{{ url_for('capsule_wardrobe') }}"
+            class="group relative overflow-hidden rounded-[40px] bg-white shadow-lg hover:shadow-2xl transition-all duration-500 aspect-[4/3] flex flex-col justify-end p-8 border border-white/40 backdrop-blur-md">
+            <div
+                class="absolute inset-0 bg-gradient-to-t from-theme-purple/60 to-transparent z-10 transition-opacity group-hover:opacity-80">
+            </div>
+            <div class="absolute inset-0 bg-gray-100 group-hover:scale-110 transition-transform duration-700"></div>
+            <div class="relative z-20 text-white">
+                <h3 class="text-2xl font-bold mb-1">Capsule Wardrobe</h3>
+                <p class="text-sm opacity-90 font-serif italic">Sartorial Synthesis.</p>
+            </div>
+        </a>
+
+        <!-- Style Consultation Card -->
+        <a href="{{ url_for('consultation') }}"
+            class="group relative overflow-hidden rounded-[40px] bg-white shadow-lg hover:shadow-2xl transition-all duration-500 aspect-[4/3] flex flex-col justify-end p-8 border border-white/40 backdrop-blur-md">
+            <div
+                class="absolute inset-0 bg-gradient-to-t from-theme-pink/70 to-theme-purple/30 z-10 transition-opacity group-hover:opacity-90">
+            </div>
+            <div class="absolute inset-0 bg-gray-100 group-hover:scale-110 transition-transform duration-700"></div>
+            <div class="relative z-20 text-white">
+                <div class="absolute top-8 right-8">
+                    <span
+                        class="bg-white/20 backdrop-blur-lg px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter">AI
+                        Stylist 2.0</span>
+                </div>
+                <h3 class="text-2xl font-bold mb-1">Consult Sila</h3>
+                <p class="text-sm opacity-90 font-serif italic">Direct Aesthetic Inquiry.</p>
+            </div>
+        </a>
     </div>
 </div>
+
+<script>
+    setTimeout(() => {
+        updateSila("Welcome back to your command center. Everything is ready for your <span class='text-theme-purple font-bold'>next style synthesis</span>.");
+    }, 1500);
+</script>
 {% endblock %}

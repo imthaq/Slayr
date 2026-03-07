@@ -3,61 +3,223 @@
 {% block title %}Grooming Blueprint{% endblock %}
 
 {% block content %}
-<div class="glass-panel p-8 rounded-[30px] shadow-xl w-full max-w-4xl">
-    <div class="text-center mb-10">
-        <h2 class="text-3xl font-serif text-gray-800">Grooming <span class="text-muted-gold">Blueprint</span></h2>
-        <p class="text-gray-500 mt-2"> Visualize different beard styles on your face.</p>
+<div class="w-full max-w-5xl mx-auto px-6 pb-12">
+    <!-- Header Section -->
+    <div class="text-center mb-10 stagger-1 fade-up">
+        <h2 class="text-3xl md:text-4xl font-sans font-bold text-gray-800 tracking-tighter mb-1 mt-4">
+            Grooming <span class="text-theme-purple">Blueprint</span>
+        </h2>
+        <p class="text-gray-400 font-serif italic text-xs tracking-wide opacity-70">Synthesizing follicles across your
+            geometric mesh.</p>
     </div>
 
-    <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-10">
-        <!-- Upload Section -->
-        <div class="space-y-6">
-            <div id="drop-zone" class="relative group cursor-pointer">
+    <form method="POST" enctype="multipart/form-data"
+        class="flex flex-col lg:flex-row gap-8 items-start justify-center">
+        <!-- Left Column: Compact Upload -->
+        <div class="w-full lg:w-72 space-y-4 stagger-2 fade-up">
+            <div id="drop-zone"
+                class="relative group cursor-pointer overflow-hidden rounded-[30px] aspect-square shadow-lg transition-all duration-500 hover:shadow-purple-100/50">
+
+                <div class="absolute inset-0 bg-gradient-to-br from-theme-pink/5 to-theme-purple/5"></div>
+
                 <div
-                    class="absolute -inset-1 bg-gradient-to-r from-gray-900 to-gray-600 rounded-[30px] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
-                </div>
-                <div
-                    class="relative w-full h-64 bg-white/80 rounded-[30px] border-2 border-dashed border-gray-400 flex flex-col items-center justify-center space-y-4 hover:bg-white transition-all duration-300">
-                    <svg class="w-12 h-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
-                        </path>
-                    </svg>
-                    <p class="text-gray-500 font-medium">Upload Selfie</p>
+                    class="relative w-full h-full bg-white/10 backdrop-blur-md border-2 border-dashed border-white/40 flex flex-col items-center justify-center space-y-3 hover:bg-white/20 transition-all">
+                    <img id="input-preview" class="hidden absolute inset-0 w-full h-full object-cover z-0" />
+
+                    <div id="upload-placeholder" class="relative z-10 flex flex-col items-center p-4">
+                        <div class="w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-sm mb-3">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                </path>
+                            </svg>
+                        </div>
+                        <p class="text-[9px] font-black uppercase tracking-[0.2em] text-gray-800">Follicle Map Search
+                        </p>
+                    </div>
                     <input type="file" name="image" id="file-input" class="hidden" accept="image/*" required>
                 </div>
             </div>
 
             <button type="submit"
-                class="w-full py-4 bg-gray-900 text-white rounded-full font-bold uppercase tracking-widest hover:bg-gray-700 transition-colors shadow-lg">
-                Try Beard Style
+                class="w-full py-4 bg-gray-900 text-white rounded-[24px] font-black uppercase tracking-[0.3em] text-[10px] hover:bg-theme-purple transition-all shadow-md active:scale-95">
+                Synthesize Beard Style
             </button>
         </div>
 
-        <!-- Result Section -->
-        <div
-            class="flex items-center justify-center bg-gray-50 rounded-[30px] border border-gray-100 min-h-[300px] overflow-hidden">
-            {% if processed_image %}
-            <img src="{{ url_for('static', filename='uploads/' + processed_image) }}"
-                class="w-full h-full object-cover rounded-[30px]" alt="Grooming Result">
-            {% else %}
-            <p class="text-gray-400 italic">Result will appear here</p>
-            {% endif %}
+        <!-- Right Column: Results Portfolio -->
+        <div class="flex-1 max-w-xl stagger-3 fade-up">
+            <div
+                class="glass-panel p-6 md:p-10 rounded-[45px] shadow-xl border-white/80 relative overflow-hidden aura-card min-h-[450px] flex flex-col items-center justify-center">
+                <!-- Decorative Organic Wave Overlay -->
+                <div
+                    class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-theme-purple/5 to-transparent pointer-events-none">
+                </div>
+
+                {% if processed_image %}
+                <div class="relative z-10 w-full animate-fade-in text-center">
+                    <div
+                        class="inline-block bg-white/60 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white shadow-sm mb-6">
+                        <p class="text-[9px] uppercase font-black tracking-[0.2em] text-theme-purple">Blueprint
+                            Generated</p>
+                    </div>
+
+                    <div class="relative group max-w-sm mx-auto">
+                        <div
+                            class="absolute -inset-4 rounded-[40px] bg-gradient-to-br from-theme-purple/30 to-theme-pink/10 blur-xl opacity-30">
+                        </div>
+                        <div class="relative rounded-[40px] overflow-hidden border-4 border-white shadow-2xl">
+                            <img src="{{ url_for('static', filename='uploads/' + processed_image) }}"
+                                class="w-full h-auto object-cover transform transition-transform duration-1000 group-hover:scale-105"
+                                alt="Grooming Result">
+                        </div>
+                    </div>
+
+                    <div class="mt-10 max-w-xs mx-auto">
+                        <p class="text-gray-500 font-serif italic text-xs leading-relaxed">
+                            Aesthetic Follicle synthesis successful. Your grooming blueprint has been aligned with your
+                            identified <a href="{{ url_for('morpho_face') }}"
+                                class="text-theme-purple font-bold hover:underline">Geometric Archetype</a>.
+                        </p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="relative z-10 text-center space-y-6 max-w-xs mx-auto" id="default-state">
+                    <div
+                        class="w-20 h-20 bg-white/60 rounded-full flex items-center justify-center shadow-inner mx-auto p-4 backdrop-blur-sm">
+                        <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-black tracking-tighter text-gray-800 uppercase">Input Required</h3>
+                    <p class="text-gray-400 font-serif italic text-sm">Synchronize your portrait with the neural
+                        grooming engine as you explore various facial-hair frequencies.</p>
+                </div>
+                <div class="relative z-10 text-center space-y-6 max-w-xs mx-auto hidden" id="waiting-text">
+                    <div
+                        class="w-20 h-20 bg-white/60 rounded-full flex items-center justify-center shadow-inner mx-auto p-4 backdrop-blur-sm animate-spin-slow">
+                        <svg class="w-10 h-10 text-theme-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004 12v1m7 1.5l-3 3m0 0l-3-3m3 3v-6m3-2.5l3-3m0 0l3 3m-3-3v6">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-black tracking-tighter text-gray-800 uppercase">Synthesizing...</h3>
+                    <p class="text-gray-400 font-serif italic text-sm">Analyzing your geometric mesh for optimal
+                        follicle alignment.</p>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </form>
 </div>
 
-<script>
-    const fileInput = document.getElementById('file-input');
-    const dropZone = document.getElementById('drop-zone');
-
-    dropZone.addEventListener('click', () => fileInput.click());
-
-    fileInput.addEventListener('change', () => {
-        if (fileInput.files.length) {
-            dropZone.classList.add('border-green-500');
-            // Optional: Show preview logic here if consistent with other features
+<style>
+    @keyframes spin-slow {
+        from {
+            transform: rotate(0deg);
         }
-    });
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .animate-spin-slow {
+        animation: spin-slow 20s linear infinite;
+    }
+</style>
+
+<script>
+    (function () {
+        const fileInput = document.getElementById('file-input');
+        const dropZone = document.getElementById('drop-zone');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const resultImage = document.getElementById('result-image');
+        const defaultState = document.getElementById('default-state');
+        const waitingText = document.getElementById('waiting-text');
+        const resultShape = document.getElementById('result-shape');
+        const resultDesc = document.getElementById('result-desc');
+        const inputPreview = document.getElementById('input-preview');
+        const resultTextContainer = document.getElementById('result-text-container');
+        const uploadPlaceholder = document.getElementById('upload-placeholder');
+
+        if (!fileInput) return;
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) {
+                const file = fileInput.files[0];
+                analyzeBtn.classList.remove('hidden');
+                uploadPlaceholder.classList.add('hidden');
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    inputPreview.src = e.target.result;
+                    inputPreview.classList.remove('hidden');
+                    updateSila("Mesh locked! Now tap <span class='text-theme-purple font-bold'>Generate Blueprint</span> to begin the neurostatic mapping.");
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        analyzeBtn.addEventListener('click', () => {
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('image', file);
+
+            analyzeBtn.innerText = "Synthesizing Blueprint...";
+            analyzeBtn.disabled = true;
+            updateSila("Mapping follicle growth... aligning with geometric archetype... your <span class='text-theme-purple font-bold'>grooming signature</span> is ready.");
+
+            // Show waiting state
+            defaultState.classList.add('hidden');
+            waitingText.classList.remove('hidden');
+
+            fetch('/grooming-analyze', {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    analyzeBtn.innerText = "Synthesize Beard Style";
+                    analyzeBtn.disabled = false;
+
+                    if (data.error) return alert(data.error);
+
+                    waitingText.classList.add('hidden');
+                    resultImage.src = data.image_url;
+                    resultImage.classList.remove('hidden');
+
+                    resultShape.innerText = data.shape;
+                    resultDesc.innerText = data.description;
+                    resultTextContainer.classList.remove('hidden');
+
+                    updateSila("Found it! The <span class='text-theme-purple font-bold'>" + data.shape + "</span> style creates perfect structural harmony for your face.");
+                })
+                .catch(err => {
+                    console.error(err);
+                    analyzeBtn.innerText = "Sync Error - Retry";
+                    analyzeBtn.disabled = false;
+                    waitingText.classList.add('hidden');
+                    defaultState.classList.remove('hidden');
+                    updateSila("Calibration error! Could you please <span class='text-red-400 font-bold'>re-scan your portrait</span>?");
+                });
+        });
+
+        // Initial Appearance
+        setTimeout(() => {
+            updateSila("Ready to synchronize your grooming blueprint? I'll find the <span class='text-theme-purple font-bold'>perfect beard archetype</span> for your mesh.");
+        }, 1500);
+
+        // Results logic on load
+        if (resultShape && resultShape.innerText.trim() !== 'Unknown' && resultShape.innerText.trim() !== '') {
+            setTimeout(() => {
+                updateSila("Your <span class='text-theme-purple font-bold'>follicle blueprint</span> is synchronized. Architecture at its finest.");
+            }, 800);
+        }
+    })();
 </script>
 {% endblock %}

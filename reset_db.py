@@ -3,8 +3,8 @@ import time
 
 def reset_db():
     paths = [
-        "c:\\Users\\AntiVenom\\Desktop\\slayr\\slayr.db",
-        "c:\\Users\\AntiVenom\\Desktop\\slayr\\instance\\slayr.db"
+        os.path.join(os.getcwd(), "instance", "slayr.db"),
+        os.path.join(os.getcwd(), "slayr.db")
     ]
     
     print("Attempting to reset database...")
