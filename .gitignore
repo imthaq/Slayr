@@ -16,6 +16,9 @@ build/
 # Flask/Instance folder
 instance/
 
+# User uploads and media
+static/uploads/
+
 # Databases
 *.sqlite3
 *.db
@@ -23,3 +26,8 @@ instance/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Task-specific files (optional)
+# If you want to keep the face_landmarker.task on GitHub, leave this commented.
+# If it is too large (>50MB), uncomment the line below:
+# *.task
