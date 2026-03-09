@@ -73,7 +73,7 @@
             <div
                 class="glass-panel p-4 rounded-[25px] shadow-sm border-white/60 mb-6 flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                    <div class="w-8 h-8 rounded-full border shadow-inner" style="background-color: {{ skin_hex }}">
+                    <div class="w-8 h-8 rounded-full border shadow-inner dynamic-bg" data-bg="{{ skin_hex }}">
                     </div>
                     <div>
                         <p class="text-[8px] uppercase font-black tracking-widest text-gray-400">Skin Analysis</p>
@@ -117,8 +117,8 @@
                             {% for match in matches %}
                             <div onclick="updateSwatch('foundation', '{{ match.hex_code }}', this)"
                                 class="cursor-pointer bg-white/60 backdrop-blur-sm p-3 rounded-2xl flex items-center space-x-3 border-2 {% if loop.first %}border-theme-purple/50 shadow-md ring-1 ring-theme-purple/20{% else %}border-transparent{% endif %} hover:border-theme-purple/30 transition-all transform hover:scale-[1.01] swatch-card-f">
-                                <div class="w-10 h-10 rounded-xl shadow-inner border border-white"
-                                    style="background-color: {{ match.hex_code }}"></div>
+                                <div class="w-10 h-10 rounded-xl shadow-inner border border-white dynamic-bg"
+                                    data-bg="{{ match.hex_code }}"></div>
                                 <div class="flex-grow min-w-0">
                                     <p class="text-[9px] font-black text-gray-800 truncate uppercase">{{ match.brand }}
                                     </p>
@@ -147,8 +147,8 @@
                             {% for match in concealer_matches %}
                             <div onclick="updateSwatch('concealer', '{{ match.hex_code }}', this)"
                                 class="cursor-pointer bg-white/60 backdrop-blur-sm p-3 rounded-2xl flex items-center space-x-3 border-2 border-transparent hover:border-theme-pink/30 transition-all transform hover:scale-[1.01] swatch-card-c">
-                                <div class="w-10 h-10 rounded-xl shadow-inner border border-white"
-                                    style="background-color: {{ match.hex_code }}"></div>
+                                <div class="w-10 h-10 rounded-xl shadow-inner border border-white dynamic-bg"
+                                    data-bg="{{ match.hex_code }}"></div>
                                 <div class="flex-grow min-w-0">
                                     <p class="text-[9px] font-black text-gray-800 truncate uppercase">{{ match.brand }}
                                     </p>
@@ -241,6 +241,12 @@
 </style>
 
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.dynamic-bg').forEach(el => {
+            if (el.dataset.bg) el.style.backgroundColor = el.dataset.bg;
+        });
+    });
+
     // Initial Appearance
     setTimeout(() => {
         updateSila("Ready to find your match? Upload a portrait and I'll map you against over <span class='text-theme-purple font-bold'>1,200 skin archetypes</span>.");

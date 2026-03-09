@@ -272,29 +272,97 @@ def analyze_color(image, landmarks, wrist_image=None):
     season_12 = max(votes, key=votes.get) if votes else None
     
     # --- Undertone Extraction ---
-    # Default to face's a/b values
-    u_a, u_b = a_std, b_std
+    undertone_found = False
     
-    # If wrist image provided, use it for pinpoint accuracy
+    # If wrist image provided, use advanced skin segmentation and vein extraction
     if wrist_image is not None:
         wh, ww, _ = wrist_image.shape
-        # Sample the center 30% of the wrist image
+        # Sample the center 50% of the wrist image
         cy, cx = wh // 2, ww // 2
-        ry, rx = int(wh * 0.15), int(ww * 0.15)
+        ry, rx = int(wh * 0.25), int(ww * 0.25)
         wrist_patch = wrist_image[max(0, cy-ry):min(wh, cy+ry), max(0, cx-rx):min(ww, cx+rx)]
         
         if wrist_patch.size > 0:
-            w_b = np.median(wrist_patch[:, :, 0])
-            w_g = np.median(wrist_patch[:, :, 1])
-            w_r = np.median(wrist_patch[:, :, 2])
-            wrist_lab_cv2 = cv2.cvtColor(np.uint8([[[w_b, w_g, w_r]]]), cv2.COLOR_BGR2LAB)[0][0]
-            _, u_a, u_b = cv2_to_std_lab(float(wrist_lab_cv2[0]), float(wrist_lab_cv2[1]), float(wrist_lab_cv2[2]))
+            # Step 1: Normalize lighting (White Balance via LAB Gray World Assumption)
+            # This is critical to remove warm indoor lighting that shifts blue veins to green
+            wb_lab = cv2.cvtColor(wrist_patch, cv2.COLOR_BGR2LAB)
+            avg_a = np.average(wb_lab[:, :, 1])
+            avg_b = np.average(wb_lab[:, :, 2])
+            wb_lab[:, :, 1] = wb_lab[:, :, 1] - ((avg_a - 128) * (wb_lab[:, :, 0] / 255.0) * 1.5)
+            wb_lab[:, :, 2] = wb_lab[:, :, 2] - ((avg_b - 128) * (wb_lab[:, :, 0] / 255.0) * 1.5)
+            wb_patch = cv2.cvtColor(wb_lab, cv2.COLOR_LAB2BGR)
+            
+            # Step 2: Skin Region Detection (Basic LAB threshold to ignore background)
+            lab = cv2.cvtColor(wb_patch, cv2.COLOR_BGR2LAB)
+            L = lab[:, :, 0]
+            skin_mask = (L > 20) & (L < 240)
+            
+            if np.sum(skin_mask) > 0:
+                # Step 3 & 4: Vein Enhancement and Extraction
+                # Use green channel extraction. Veins appear strongest (darkest) there.
+                G = wb_patch[:, :, 1]
+                
+                valid_G = G[skin_mask]
+                # Isolate the darkest 25% of the green channel on the skin to find veins
+                g_thresh = np.percentile(valid_G, 25) 
+                
+                vein_mask = skin_mask & (G < g_thresh)
+                vein_bgr_pixels = wb_patch[vein_mask]
+                
+                # Step 5 & 6: Color Analysis and Classification
+                if vein_bgr_pixels.size > 0:
+                    avg_b = np.mean(vein_bgr_pixels[:, 0])
+                    avg_g = np.mean(vein_bgr_pixels[:, 1])
+                    avg_r = np.mean(vein_bgr_pixels[:, 2])
+                    
+                    # Store the RAW pixel means to evaluate the true leaning before White Balance
+                    raw_bgr_pixels = wrist_patch[vein_mask]
+                    raw_b = np.mean(raw_bgr_pixels[:, 0])
+                    raw_g = np.mean(raw_bgr_pixels[:, 1])
+                    
+                    # Confidence formulation: |Blue - Green| / (Blue + Green)
+                    diff = abs(avg_b - avg_g)
+                    confidence = diff / (avg_b + avg_g + 1e-6)
+                    
+                    # Thresholds
+                    neutral_threshold = 0.035 
+                    
+                    # Base Undertone Classification
+                    undertone_base = "Warm"
+                    if confidence > neutral_threshold or avg_r > avg_b:
+                        undertone_base = "Neutral" 
+                    elif avg_b > avg_g:
+                        undertone_base = "Cool" 
+                    else:
+                        undertone_base = "Warm"
+                        
+                    # Calculate sub-tone leaning based on RAW pixel comparisons
+                    leaning = ""
+                    if undertone_base == "Neutral":
+                        if raw_g > raw_b:
+                            leaning = " (Warm Leaning)"
+                        elif raw_b > raw_g:
+                            leaning = " (Cool Leaning)"
+                    elif undertone_base == "Cool":
+                        if raw_g > raw_b:  
+                            leaning = " (Neutral Leaning)"
+                    elif undertone_base == "Warm":
+                        if raw_b > raw_g:  
+                            leaning = " (Neutral Leaning)"
+                            
+                    undertone = f"{undertone_base}{leaning}"        
+                    undertone_found = True
 
-    # Natural balance: Warm has high b_std compared to a_std
-    # Human skin is inherently yellow-leaning. If a_std >= b_std, it's almost certainly Cool.
-    undertone = "Neutral"
-    if u_b > u_a + 4: undertone = "Warm"
-    elif u_a >= u_b - 1: undertone = "Cool"
+    # Fallback to face's a/b values if no wrist image or vein detection failed
+    if not undertone_found:
+        # Natural balance: Warm has high b_std compared to a_std
+        # Human skin is inherently yellow-leaning. If a_std >= b_std, it's almost certainly Cool.
+        if b_std > a_std + 4: 
+            undertone = "Warm"
+        elif a_std >= b_std - 1: 
+            undertone = "Cool"
+        else:
+            undertone = "Neutral"
         
     return hex_code, undertone, (l_std, a_std, b_std), season_12, mst_label
 
