@@ -15,8 +15,8 @@
 
     <div class="flex flex-col lg:flex-row gap-8 items-start justify-center">
         <!-- Left: Vibe Selection Sidebar -->
-        <div class="w-full lg:w-72 space-y-6 stagger-2 fade-up">
-            <div class="bg-white/40 backdrop-blur-sm p-6 rounded-[35px] border border-white/60 shadow-lg">
+        <div class="w-full lg:w-72 space-y-6 stagger-2 fade-up px-2 sm:px-0">
+            <div class="bg-white/40 backdrop-blur-sm p-5 md:p-6 rounded-[30px] md:rounded-[35px] border border-white/60 shadow-lg">
                 <p class="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 mb-6 text-center">Frequency
                     Selection</p>
 
@@ -55,7 +55,7 @@
         </div>
 
         <!-- Right: Curated Display Portfolio -->
-        <div class="flex-1 max-w-2xl stagger-3 fade-up h-full">
+        <div class="flex-1 max-w-2xl w-full stagger-3 fade-up h-full px-2 sm:px-0">
             {% if vibe %}
             <div
                 class="glass-panel p-6 md:p-10 rounded-[45px] shadow-xl border-white/80 relative overflow-hidden aura-card min-h-[550px]">
@@ -122,7 +122,7 @@
             </div>
             {% else %}
             <div
-                class="glass-panel p-10 rounded-[45px] border-white/40 bg-white/20 relative overflow-hidden h-full flex flex-col justify-center min-h-[450px]">
+                class="glass-panel p-6 md:p-10 rounded-[30px] md:rounded-[45px] border-white/40 bg-white/20 relative overflow-hidden h-[400px] md:h-full flex flex-col justify-center min-h-[450px]">
                 <div class="absolute top-0 right-0 w-48 h-48 bg-theme-purple/5 blur-[60px]"></div>
 
                 <div class="text-center max-w-sm mx-auto">

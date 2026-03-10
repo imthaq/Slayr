@@ -3,9 +3,9 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<div class="w-full max-w-md mx-auto">
-    <div class="glass-panel p-10 rounded-[40px] shadow-2xl form-card relative overflow-hidden backdrop-blur-2xl">
-        <h2 class="text-4xl font-sans font-bold text-center mb-2 text-gray-800 tracking-tight">Welcome Back</h2>
+<div class="w-full max-w-md mx-auto px-4 sm:px-0">
+    <div class="glass-panel p-6 sm:p-8 md:p-10 rounded-[30px] md:rounded-[40px] shadow-2xl form-card relative overflow-hidden backdrop-blur-2xl">
+        <h2 class="text-3xl md:text-4xl font-sans font-bold text-center mb-2 text-gray-800 tracking-tight">Welcome Back</h2>
         <p class="text-center text-gray-400 mb-10 font-serif italic stagger-1 fade-up">Your style journey continues</p>
 
         <form method="POST" action="{{ url_for('login') }}" class="space-y-6">

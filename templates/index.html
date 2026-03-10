@@ -2,8 +2,8 @@
 
 {% block content %}
 <section id="hero-section"
-    class="w-full max-w-4xl text-center space-y-4 animate-fade-in-up py-12 relative z-10 flex flex-col items-center justify-center">
-    <h1 class="text-5xl md:text-7xl font-sans font-bold text-gray-800 leading-tight">
+    class="w-full max-w-4xl text-center space-y-4 animate-fade-in-up py-8 md:py-12 px-4 relative z-10 flex flex-col items-center justify-center min-h-[60vh]">
+    <h1 class="text-4xl sm:text-5xl md:text-7xl font-sans font-bold text-gray-800 leading-tight">
         Your <span class="text-shimmer">Style,</span><br>
         <span class="font-normal text-gray-700">One</span> <span class="text-shimmer">Step</span> <span
             class="font-normal text-gray-700">Ahead</span>
@@ -12,13 +12,13 @@
         AI-powered beauty and wardrobe analysis
     </p>
 
-    <!-- Drifting Tokens with Staggered Entrance (Bubble Style) -->
-    <div class="floating-token bubble-stagger top-[12%] left-[8%]" style="animation-delay: 0.1s;">🎀</div>
-    <div class="floating-token bubble-stagger top-[22%] right-[12%]" style="animation-delay: 0.3s;">💅</div>
-    <div class="floating-token bubble-stagger bottom-[22%] left-[12%]" style="animation-delay: 0.5s;">🌸</div>
-    <div class="floating-token bubble-stagger bottom-[32%] right-[10%]" style="animation-delay: 0.7s;">🩰</div>
-    <div class="floating-token bubble-stagger top-[45%] left-[5%]" style="animation-delay: 0.9s;">🧖‍♀️</div>
-    <div class="floating-token bubble-stagger top-[65%] right-[3%]" style="animation-delay: 1.1s;">🛍️</div>
+    <!-- Drifting Tokens with Staggered Entrance (Bubble Style) - Hidden on smallest mobile, responsive on others -->
+    <div class="hidden sm:flex floating-token bubble-stagger absolute top-[5%] md:top-[12%] left-[2%] md:left-[8%]" style="animation-delay: 0.1s;">🎀</div>
+    <div class="hidden sm:flex floating-token bubble-stagger absolute top-[15%] md:top-[22%] right-[5%] md:right-[12%]" style="animation-delay: 0.3s;">💅</div>
+    <div class="hidden sm:flex floating-token bubble-stagger absolute bottom-[15%] md:bottom-[22%] left-[5%] md:left-[12%]" style="animation-delay: 0.5s;">🌸</div>
+    <div class="hidden sm:flex floating-token bubble-stagger absolute bottom-[25%] md:bottom-[32%] right-[2%] md:right-[10%]" style="animation-delay: 0.7s;">🩰</div>
+    <div class="hidden md:flex floating-token bubble-stagger absolute top-[45%] left-[5%]" style="animation-delay: 0.9s;">🧖‍♀️</div>
+    <div class="hidden md:flex floating-token bubble-stagger absolute top-[65%] right-[3%]" style="animation-delay: 1.1s;">🛍️</div>
 
 
 

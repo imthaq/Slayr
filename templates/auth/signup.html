@@ -3,14 +3,14 @@
 {% block title %}Sign Up{% endblock %}
 
 {% block content %}
-<div class="w-full max-w-lg mx-auto">
-    <div class="glass-panel p-10 rounded-[40px] shadow-2xl form-card relative overflow-hidden backdrop-blur-2xl">
+<div class="w-full max-w-lg mx-auto px-4 sm:px-0">
+    <div class="glass-panel p-6 sm:p-8 md:p-10 rounded-[30px] md:rounded-[40px] shadow-2xl form-card relative overflow-hidden backdrop-blur-2xl">
         <!-- Decoration orbs inside panel -->
-        <div class="absolute -top-20 -right-20 w-40 h-40 bg-theme-pink/20 rounded-full blur-3xl"></div>
-        <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-theme-blue/20 rounded-full blur-3xl"></div>
+        <div class="absolute -top-20 -right-20 w-40 h-40 bg-theme-pink/20 rounded-[100%] blur-3xl"></div>
+        <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-theme-blue/20 rounded-[100%] blur-3xl"></div>
 
-        <h2 class="text-4xl font-sans font-bold text-center mb-2 text-gray-800 tracking-tight">Create Your Aura</h2>
-        <p class="text-center text-gray-500 mb-10 font-serif italic stagger-1 fade-up">Step into the future of personal
+        <h2 class="text-3xl md:text-4xl font-sans font-bold text-center mb-2 text-gray-800 tracking-tight">Create Your Aura</h2>
+        <p class="text-center text-gray-500 mb-8 md:mb-10 font-serif italic stagger-1 fade-up">Step into the future of personal
             style</p>
 
         <form method="POST" action="{{ url_for('signup') }}" class="space-y-6">
@@ -30,18 +30,18 @@
             <div class="space-y-3 stagger-4 fade-up">
                 <label class="block text-xs uppercase tracking-[0.2em] text-gray-400 font-bold ml-1">Select Your
                     Vibe</label>
-                <div class="flex gap-4">
+                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
                     <label class="gender-chip flex-1">
                         <input type="radio" name="gender" value="Female" required>
-                        <div class="gender-card">Female</div>
+                        <div class="gender-card py-2 md:py-3">Female</div>
                     </label>
                     <label class="gender-chip flex-1">
                         <input type="radio" name="gender" value="Male">
-                        <div class="gender-card">Male</div>
+                        <div class="gender-card py-2 md:py-3">Male</div>
                     </label>
                     <label class="gender-chip flex-1">
                         <input type="radio" name="gender" value="Other">
-                        <div class="gender-card">Other</div>
+                        <div class="gender-card py-2 md:py-3">Other</div>
                     </label>
                 </div>
             </div>

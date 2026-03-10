@@ -10,11 +10,11 @@
     }
 </style>
 
-<div class="w-full max-w-6xl space-y-12">
+<div class="w-full max-w-6xl space-y-8 md:space-y-12 px-4 sm:px-6 lg:px-8 mx-auto mt-4 md:mt-0 pb-12">
     <!-- Welcome Header & Sila Intro -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border-b border-gray-100 pb-10">
-        <div class="lg:col-span-8 flex items-center space-x-6">
-            <div class="relative group">
+    <div class="flex flex-col lg:grid lg:grid-cols-12 gap-8 items-center border-b border-gray-100 pb-8 md:pb-10">
+        <div class="lg:col-span-8 flex flex-col md:flex-row items-center md:items-start text-center md:text-left md:space-x-6 space-y-6 md:space-y-0 w-full">
+            <div class="relative group mx-auto md:mx-0 flex-shrink-0">
                 <div
                     class="absolute -inset-1 bg-gradient-to-r from-theme-purple to-theme-pink rounded-full blur opacity-20 group-hover:opacity-40 transition duration-1000">
                 </div>
@@ -30,17 +30,17 @@
                 </div>
             </div>
 
-            <div class="space-y-2">
+            <div class="space-y-2 md:space-y-3 w-full max-w-lg mx-auto md:mx-0">
                 <h2 class="text-3xl md:text-5xl font-sans font-black text-gray-800 tracking-tighter">
                     Hello, <span
-                        class="bg-gradient-to-r from-theme-purple to-theme-pink bg-clip-text text-transparent">{{
+                        class="bg-gradient-to-r from-theme-purple to-theme-pink bg-clip-text text-transparent break-words">{{
                         user.full_name or user.username }}</span>
                 </h2>
-                <div class="bg-white/40 backdrop-blur-sm p-4 rounded-3xl border border-white max-w-lg relative">
+                <div class="bg-white/40 backdrop-blur-sm p-4 md:p-5 rounded-3xl border border-white relative mx-auto md:mx-0">
                     <div
-                        class="absolute -left-2 top-4 w-4 h-4 bg-white/40 border-l border-t border-white transform -rotate-45 hidden md:block">
+                        class="absolute -left-2 top-6 w-4 h-4 bg-white/40 border-l border-t border-white transform -rotate-45 hidden md:block">
                     </div>
-                    <p class="text-gray-500 font-serif italic text-sm leading-relaxed">
+                    <p class="text-gray-500 font-serif italic text-sm md:text-base leading-relaxed">
                         "I'm <span class="text-theme-purple font-bold">Sila</span>, your personal style synthesist.
                         Let's map your unique spectral aura and find your perfect architectural fit today."
                     </p>
@@ -48,16 +48,16 @@
             </div>
         </div>
 
-        <div class="lg:col-span-4 flex justify-end gap-6">
+        <div class="lg:col-span-4 flex flex-wrap justify-center lg:justify-end gap-4 md:gap-6 w-full">
             <div
-                class="text-center p-4 bg-white/40 backdrop-blur-sm rounded-[30px] border border-white shadow-sm min-w-[120px]">
-                <p class="text-[8px] uppercase tracking-[0.2em] text-gray-400 font-black mb-1">Face Shape</p>
-                <p class="text-lg font-sans font-black text-theme-pink uppercase">{{ user.face_shape or 'N/A' }}</p>
+                class="text-center p-4 bg-white/40 backdrop-blur-sm rounded-[30px] border border-white shadow-sm flex-1 sm:flex-none min-w-[120px] max-w-[160px]">
+                <p class="text-[8px] md:text-[9px] uppercase tracking-[0.2em] text-gray-400 font-black mb-1">Face Shape</p>
+                <p class="text-base md:text-lg font-sans font-black text-theme-pink uppercase truncate">{{ user.face_shape or 'N/A' }}</p>
             </div>
             <div
-                class="text-center p-4 bg-white/40 backdrop-blur-sm rounded-[30px] border border-white shadow-sm min-w-[120px]">
-                <p class="text-[8px] uppercase tracking-[0.2em] text-gray-400 font-black mb-1">Aura Map</p>
-                <p class="text-lg font-sans font-black text-theme-purple uppercase">Synthesized</p>
+                class="text-center p-4 bg-white/40 backdrop-blur-sm rounded-[30px] border border-white shadow-sm flex-1 sm:flex-none min-w-[120px] max-w-[160px]">
+                <p class="text-[8px] md:text-[9px] uppercase tracking-[0.2em] text-gray-400 font-black mb-1">Aura Map</p>
+                <p class="text-base md:text-lg font-sans font-black text-theme-purple uppercase">Synthesized</p>
             </div>
         </div>
     </div>

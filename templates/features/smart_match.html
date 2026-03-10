@@ -16,13 +16,13 @@
     <form method="POST" enctype="multipart/form-data"
         class="flex flex-col lg:flex-row gap-8 items-start justify-center">
         <!-- Left: Compact Input & Controls -->
-        <div class="w-full lg:w-72 space-y-6 stagger-2 fade-up">
+        <div class="w-full lg:w-72 space-y-6 stagger-2 fade-up px-2 sm:px-0">
             <div id="drop-zone"
                 class="relative group cursor-pointer overflow-hidden rounded-[30px] aspect-square shadow-lg transition-all duration-500 hover:shadow-purple-100/50"
                 data-swatched-image="{{ url_for('static', filename='uploads/' + swatched_image) if swatched_image else '' }}"
                 data-swatch-coords='{{ swatch_coords|tojson if swatch_coords else "{}" }}'
                 data-foundation-hex="{{ matches[0].hex_code if matches else '#D4A373' }}"
-                data-concealer-hex="{{ concealer_matches[0].hex_code if concealer_matches else '#F5E8E1' }}">
+                data-concealer-hex="{{ concealer_matches[0].hex_code if concealer_matches else '' }}">
 
                 <div class="absolute inset-0 bg-gradient-to-br from-theme-pink/5 to-theme-purple/5"></div>
 
@@ -67,7 +67,7 @@
         </div>
 
         <!-- Right: Slim Match Results -->
-        <div class="flex-1 max-w-2xl stagger-3 fade-up h-full">
+        <div class="flex-1 max-w-2xl w-full stagger-3 fade-up h-full px-2 sm:px-0">
             {% if skin_hex %}
             <!-- Analysis Summary Bar -->
             <div
@@ -204,7 +204,7 @@
 
             {% else %}
             <div
-                class="glass-panel p-10 rounded-[45px] border-white/50 border-2 bg-white/20 relative overflow-hidden h-full flex flex-col justify-center min-h-[450px]">
+                class="glass-panel p-6 md:p-10 rounded-[30px] md:rounded-[45px] border-white/50 border-2 bg-white/20 relative overflow-hidden h-[450px] md:h-full flex flex-col justify-center min-h-[450px]">
                 <div class="absolute top-0 right-0 w-48 h-48 bg-theme-purple/5 blur-[60px]"></div>
                 <h3 class="text-2xl font-black tracking-tighter mb-8 text-gray-800 text-center">Spectral <span
                         class="text-theme-purple">Matching</span></h3>
@@ -314,7 +314,9 @@
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0);
                 drawSwatch(fCoord.x * canvas.width, fCoord.y * canvas.height, currentFoundationHex);
-                drawSwatch(cCoord.x * canvas.width, cCoord.y * canvas.height, currentConcealerHex);
+                if (currentConcealerHex) {
+                    drawSwatch(cCoord.x * canvas.width, cCoord.y * canvas.height, currentConcealerHex);
+                }
             }
 
             function drawSwatch(x, y, hex) {
