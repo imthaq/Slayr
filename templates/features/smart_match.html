@@ -123,12 +123,8 @@
     <div class="max-w-6xl mx-auto space-y-16">
 
         <header class="text-center space-y-4 animate-entry">
-            <div class="flex items-center justify-center gap-3">
-                <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-[#ffb0d8]">Foundation Ritual</h2>
-                <div class="h-2 w-2 rounded-full bg-[#ffb0d8] animate-pulse"></div>
-            </div>
+            
             <h1 class="text-6xl font-black text-white tracking-tighter">Smart <span class="text-white/20">Match</span></h1>
-            <p class="text-white/40 font-playfair italic text-lg md:text-xl max-w-xl mx-auto">Foundational synthesis. Align your dermal frequency with over 1,200 curated shades.</p>
         </header>
 
         <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
@@ -197,7 +193,7 @@
                                     </div>
                                     {% endfor %}
                                     {% else %}
-                                    <p class="text-[10px] font-playfair italic text-white/20">Zero resonances found.</p>
+                                    <p class="text-[10px] font-playfair italic text-white/20">No results found.</p>
                                     {% endif %}
                                 </div>
                             </div>
@@ -217,24 +213,13 @@
                                     </div>
                                     {% endfor %}
                                     {% else %}
-                                    <p class="text-[10px] font-playfair italic text-white/20">Zero resonances found.</p>
+                                    <p class="text-[10px] font-playfair italic text-white/20">No results found.</p>
                                     {% endif %}
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white/5 border border-white/5 p-8 rounded-3xl flex items-start gap-6">
-                        <div class="w-12 h-12 rounded-full overflow-hidden bg-white/10 shrink-0">
-                            <img src="{{ url_for('static', filename='assets/sila_stylist.png') }}" class="w-full h-full object-contain">
-                        </div>
-                        <div class="space-y-2">
-                            <p class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8]">Sila's Verdict</p>
-                            <p class="text-[#ffb0d8]/40 font-playfair italic text-lg leading-relaxed">
-                                "These matches are synchronized with your spectral undertone. Focus on high-hydration formulas to maintain dermal luminosity."
-                            </p>
-                        </div>
-                    </div>
                 </div>
                 {% elif error %}
                 <div class="glass-card-premium p-12 h-full flex flex-col items-center justify-center text-center space-y-8 min-h-[500px]">
@@ -245,7 +230,7 @@
                         <p class="text-xl font-playfair italic text-white/60">Synchronization Interrupted</p>
                         <p class="text-[8px] font-black uppercase tracking-[0.3em] text-red-400/60">{{ error }}</p>
                     </div>
-                    <button onclick="location.reload()" class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8] hover:underline">Retry Initialization</button>
+                    <button onclick="location.reload()" class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8] hover:underline">Try again</button>
                 </div>
                 {% else %}
                 <div class="glass-card-premium p-12 flex flex-col items-center justify-center text-center space-y-6 min-h-[500px] border-dashed border-2">
@@ -258,7 +243,7 @@
                     </div>
                     <div class="space-y-2 relative z-10 text-center">
                         <p class="text-2xl font-playfair italic text-white/40">Awaiting Chromatic Signal...</p>
-                        <p class="text-[9px] font-black uppercase tracking-[0.4em] text-[#ffb0d8]/50">Neural Analysis Module Offline</p>
+                        <p class="text-[9px] font-black uppercase tracking-[0.4em] text-[#ffb0d8]/50">Upload a photo to begin.</p>
                     </div>
                     <div class="absolute inset-0 bg-gradient-to-b from-transparent to-white/5 pointer-events-none rounded-[40px]"></div>
                 </div>
@@ -282,7 +267,7 @@
         artElementId: 'portal-art',
         laserElementId: 'scan-laser',
         isMain: true,
-        onFileSelected: () => updateSila("Dermal profile captured. Ready to synthesize matches.")
+        onFileSelected: () => updateSila("Photo received. Ready to find matches.")
     });
 
     if (canvas && dropZone) {
@@ -308,7 +293,7 @@
                 canvas.width = img.width;
                 canvas.height = img.height;
                 draw();
-                updateSila("Matches synchronized. Select a matrix card to update the studio swatch.");
+                updateSila("Matches found. Tap a card to preview the shade.");
             };
 
             function draw() {
@@ -339,7 +324,7 @@
                 element.classList.add('active');
 
                 draw();
-                updateSila("Matrix updated. Harmonizing with the <span class='text-[#ffb0d8] font-black'>" + hex + "</span> frequency.");
+                updateSila("Previewing <span class='text-[#ffb0d8] font-black'>" + hex + "</span>.");
             }
         } else if (skinHex) {
             canvas.width = 400;
@@ -412,7 +397,7 @@
             }
 
             drawVectorLayout();
-            updateSila("Profile preloaded. Select matrix cards to update the comparison swatch.");
+            updateSila("Your profile is loaded. Tap a card to compare shades.");
 
             window.updateSwatch = function (type, hex, element) {
                 if (type === 'foundation') currentFoundationHex = hex;
@@ -423,14 +408,14 @@
                 element.classList.add('active');
 
                 drawVectorLayout();
-                updateSila("Matrix updated. Harmonizing with the <span class='text-[#ffb0d8] font-black'>" + hex + "</span> frequency.");
+                updateSila("Previewing <span class='text-[#ffb0d8] font-black'>" + hex + "</span>.");
             }
         }
     }
 
     {% if error %}
     setTimeout(() => {
-        updateSila("⚠️ <span class='text-red-400'>Sync Failed: {{ error }}</span>");
+        updateSila("⚠️ <span class='text-red-400'>Failed: {{ error }}</span>");
     }, 500);
     {% endif %}
 </script>

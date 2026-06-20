@@ -57,7 +57,17 @@ def get_clip():
         _clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
     return _clip_model, _clip_processor
 
+USE_CLIP = os.environ.get("USE_CLIP", "1") == "1"
+
 def classify_item(image_path):
+    if not USE_CLIP:
+        name = os.path.basename(image_path).lower()
+        for cat, keywords in CATEGORY_MAPPING.items():
+            for kw in keywords:
+                if kw in name:
+                    return cat, kw.capitalize()
+        return "top", "Item"
+
     try:
         model, processor = get_clip()
         img = Image.open(image_path).convert("RGB")

@@ -95,12 +95,8 @@
     <div class="max-w-6xl mx-auto space-y-16">
 
         <header class="text-center space-y-4 animate-entry">
-            <div class="flex items-center justify-center gap-3">
-                <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-[#ffb0d8]">Structural Ritual</h2>
-                <div class="h-2 w-2 rounded-full bg-[#ffb0d8] animate-pulse"></div>
-            </div>
+            
             <h1 class="text-6xl font-black text-white tracking-tighter">Frame <span class="text-white/20">Fit</span></h1>
-            <p class="text-white/40 font-playfair italic text-xl max-w-xl mx-auto">Architectural eyewear synthesis. Map your facial geometry against our curated optic library.</p>
         </header>
 
         <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
@@ -193,17 +189,6 @@
                         </div>
                     </div>
 
-                    <div class="bg-white/5 border border-white/5 p-8 rounded-3xl flex items-start gap-6">
-                        <div class="w-12 h-12 rounded-full overflow-hidden bg-white/10 shrink-0">
-                            <img src="{{ url_for('static', filename='assets/sila_stylist.png') }}" class="w-full h-full object-contain">
-                        </div>
-                        <div class="space-y-2">
-                            <p class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8]">Sila's Verdict</p>
-                            <p class="text-[#ffb0d8]/40 font-playfair italic text-lg leading-relaxed">
-                                "Your {{ face_analysis.face_shape }} architecture demands structured frame geometry. These selections provide optimal horizontal balance for your profile."
-                            </p>
-                        </div>
-                    </div>
                 </div>
                 {% elif error %}
                 <div class="glass-card-premium p-12 h-full flex flex-col items-center justify-center text-center space-y-8 min-h-[500px]">
@@ -214,7 +199,7 @@
                         <p class="text-xl font-playfair italic text-white/60">Mapping Interrupted</p>
                         <p class="text-[8px] font-black uppercase tracking-[0.3em] text-red-400/60">{{ error }}</p>
                     </div>
-                    <button onclick="location.reload()" class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8] hover:underline">Retry Initialization</button>
+                    <button onclick="location.reload()" class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8] hover:underline">Try again</button>
                 </div>
                 {% else %}
                 <div class="glass-card-premium p-12 h-full flex flex-col items-center justify-center text-center space-y-8 min-h-[500px]">
@@ -222,8 +207,8 @@
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
                     </div>
                     <div class="space-y-2">
-                        <p class="text-xl font-playfair italic text-white/20">Awaiting Geometric Signal...</p>
-                        <p class="text-[8px] font-black uppercase tracking-[0.3em] text-white/10">Neural Analysis Module Offline</p>
+                        <p class="text-xl font-playfair italic text-white/20">Upload a photo to begin.</p>
+                        <p class="text-[8px] font-black uppercase tracking-[0.3em] text-white/10">Upload a photo to begin.</p>
                     </div>
                 </div>
                 {% endif %}
@@ -246,7 +231,7 @@
         artElementId: 'portal-art',
         laserElementId: 'scan-laser',
         isMain: true,
-        onFileSelected: () => updateSila("Profile captured. Ready to map frame architecture.")
+        onFileSelected: () => updateSila("Photo received. Finding your frames...")
     });
 
     // Load initial image if exists
@@ -265,18 +250,18 @@
         document.getElementById('card-' + idx).classList.add('active');
         activeLabel.textContent = name;
 
-        updateSila("Evaluating the <span class='text-[#ffb0d8] font-black'>" + name + "</span> geometry on your profile.");
+        updateSila("Trying on <span class='text-[#ffb0d8] font-black'>" + name + "</span>.");
     }
 
     {% if recommended %}
     setTimeout(() => {
-        updateSila("Sythesis complete. {{ recommended|length }} optic matches found for your <span class='text-[#ffb0d8] font-black'>{{ face_analysis.face_shape }}</span> profile.");
+        updateSila("Done. {{ recommended|length }} matches found for your <span class='text-[#ffb0d8] font-black'>{{ face_analysis.face_shape }}</span>.");
     }, 1000);
     {% endif %}
 
     {% if error %}
     setTimeout(() => {
-        updateSila("⚠️ <span class='text-red-400'>Analysis Interrupted: {{ error }}</span>");
+        updateSila("⚠️ <span class='text-red-400'>Analysis failed: {{ error }}</span>");
     }, 500);
     {% endif %}
 </script>

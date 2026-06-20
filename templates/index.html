@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Slayr | Your AI Aesthetic Ritual{% endblock %}
+{% block title %}Slayr{% endblock %}
 
 {% block content %}
 <style>
@@ -136,11 +136,11 @@
             <div class="h-24 md:h-32 w-auto mx-auto"></div>
 
             <h1 class="text-5xl md:text-7xl font-black tracking-tighter text-white">
-                Refine Your <span class="text-transparent bg-clip-text" style="background-image: var(--rainbow-gradient)">Essence.</span>
+                Slayr
             </h1>
 
-            <p class="text-lg md:text-xl text-white/60 font-medium max-w-xl mx-auto leading-relaxed">
-                Step into the portal and synchronize your natural beauty with our neural aesthetic engine.
+            <p class="text-lg text-white/50 font-medium max-w-md mx-auto leading-relaxed">
+                Skin tone, face shape, foundation match, outfit palette — from a single photo.
             </p>
         </div>
 
@@ -158,16 +158,15 @@
         </div>
 
         <div class="flex flex-wrap justify-center gap-6 pb-20">
-            <a href="{{ url_for('signup') }}" class="btn-squish rainbow-glow">Get Analyzed</a>
-            <a href="#suite" class="px-10 py-5 rounded-full border-2 border-white/20 text-[10px] font-black uppercase tracking-[0.3em] text-white/80 hover:bg-white/10 hover:border-white transition-all">Inside the Suite</a>
+            <a href="{{ url_for('signup') }}" class="btn-squish rainbow-glow">Get Started</a>
+            <a href="#suite" class="px-10 py-5 rounded-full border-2 border-white/20 text-[10px] font-black uppercase tracking-[0.3em] text-white/80 hover:bg-white/10 hover:border-white transition-all">See Features</a>
         </div>
     </section>
 
     <section id="suite" class="py-32 px-6">
         <div class="max-w-6xl mx-auto">
             <div class="text-center mb-20 space-y-4">
-                <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-dusky-accent">The Ritual</h2>
-                <h3 class="text-4xl md:text-5xl font-black text-white/90">Discover Your Blueprint.</h3>
+                <h3 class="text-4xl md:text-5xl font-black text-white/90">What Slayr Does</h3>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -176,7 +175,6 @@
                     <div class="w-20 h-20 bg-gradient-to-br from-white/20 to-white/5 rounded-full mx-auto flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-inner">🎨</div>
                     <div class="space-y-2">
                         <h4 class="text-xl font-bold text-white uppercase tracking-tighter">Chroma Skin</h4>
-                        <p class="text-sm text-white/60 leading-relaxed font-medium">Decode your complexion's unique spectral identity.</p>
                     </div>
                 </a>
 
@@ -184,7 +182,6 @@
                     <div class="w-20 h-20 bg-gradient-to-br from-white/20 to-white/5 rounded-full mx-auto flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-inner">🧬</div>
                     <div class="space-y-2">
                         <h4 class="text-xl font-bold text-white uppercase tracking-tighter">Morpho Face</h4>
-                        <p class="text-sm text-white/60 leading-relaxed font-medium">Map the architecture of your facial features.</p>
                     </div>
                 </a>
 
@@ -192,7 +189,6 @@
                     <div class="w-20 h-20 bg-gradient-to-br from-white/20 to-white/5 rounded-full mx-auto flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-inner">✨</div>
                     <div class="space-y-2">
                         <h4 class="text-xl font-bold text-white uppercase tracking-tighter">Vibe Check</h4>
-                        <p class="text-sm text-white/60 leading-relaxed font-medium">Align your style with your atmospheric resonance.</p>
                     </div>
                 </a>
 
@@ -200,7 +196,6 @@
                     <div class="w-20 h-20 bg-gradient-to-br from-white/20 to-white/5 rounded-full mx-auto flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-inner">💎</div>
                     <div class="space-y-2">
                         <h4 class="text-xl font-bold text-white uppercase tracking-tighter">Smart Match</h4>
-                        <p class="text-sm text-white/60 leading-relaxed font-medium">Synthesize the perfect foundation match instantly.</p>
                     </div>
                 </a>
 
@@ -208,7 +203,6 @@
                     <div class="w-20 h-20 bg-gradient-to-br from-white/20 to-white/5 rounded-full mx-auto flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-inner">👗</div>
                     <div class="space-y-2">
                         <h4 class="text-xl font-bold text-white uppercase tracking-tighter">Wardrobe AI</h4>
-                        <p class="text-sm text-white/60 leading-relaxed font-medium">Curate a wardrobe that reflects your true aura.</p>
                     </div>
                 </a>
 
@@ -216,7 +210,6 @@
                     <div class="w-20 h-20 bg-gradient-to-br from-white/20 to-white/5 rounded-full mx-auto flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-inner">👓</div>
                     <div class="space-y-2">
                         <h4 class="text-xl font-bold text-white uppercase tracking-tighter">Frame Fit</h4>
-                        <p class="text-sm text-white/60 leading-relaxed font-medium">Architectural eyewear synthesis.</p>
                     </div>
                 </a>
 
@@ -224,7 +217,6 @@
                     <div class="w-20 h-20 bg-gradient-to-br from-white/20 to-white/5 rounded-full mx-auto flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-inner">🪒</div>
                     <div class="space-y-2">
                         <h4 class="text-xl font-bold text-white uppercase tracking-tighter">Grooming</h4>
-                        <p class="text-sm text-white/60 leading-relaxed font-medium">Neural follicle alignment.</p>
                     </div>
                 </a>
             </div>
@@ -234,7 +226,7 @@
     <footer class="py-40 text-center space-y-12">
         <div class="space-y-6">
             <img src="{{ url_for('static', filename='assets/new_logo.png') }}" alt="Slayr" class="h-10 w-auto mx-auto opacity-30">
-            <p class="text-[9px] font-black uppercase tracking-[1em] text-white/20">&copy; 2026 Slayr AI &bull; Aesthetic Intelligence Studio</p>
+            <p class="text-[9px] font-black uppercase tracking-[1em] text-white/20">&copy; 2026 Slayr</p>
         </div>
     </footer>
 </div>

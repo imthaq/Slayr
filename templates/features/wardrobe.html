@@ -99,11 +99,9 @@
         <header class="flex flex-col md:flex-row items-end justify-between gap-8 animate-entry">
             <div class="space-y-4">
                 <div class="flex items-center gap-3">
-                    <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-[#ffb0d8]">Ritual v4.0</h2>
                     <div class="h-2 w-2 rounded-full bg-[#ffb0d8] animate-pulse"></div>
                 </div>
                 <h1 class="text-6xl font-black text-white tracking-tighter">Wardrobe <span class="text-white/20">AI</span></h1>
-                <p class="text-white/40 font-playfair italic text-xl max-w-xl">Curate your sartorial capsule with neural matching and spectral resonance.</p>
             </div>
 
             <div class="flex flex-col sm:flex-row gap-4">
@@ -122,7 +120,7 @@
             
             <aside class="lg:col-span-1 space-y-8 animate-entry" style="animation-delay: 0.1s">
                 <div class="glass-card-premium p-8 sticky top-32">
-                    <h3 class="text-[10px] font-black uppercase tracking-widest text-white/30 mb-6">Input Module</h3>
+                    <h3 class="text-[10px] font-black uppercase tracking-widest text-white/30 mb-6"></h3>
                     
                     <div id="wardrobe-error" class="hidden mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-center">
                         <p class="text-[9px] font-black uppercase tracking-widest text-red-400">Sync Interrupted</p>
@@ -153,7 +151,7 @@
                 
                 <section id="results-section" class="hidden space-y-10 animate-entry">
                     <div class="flex items-center gap-6">
-                        <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-[#ffb0d8]">Matches Synthesized</h2>
+                        <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-[#ffb0d8]">Outfits</h2>
                         <div class="h-px flex-1 bg-[#ffb0d8]/20"></div>
                         <button onclick="document.getElementById('results-section').classList.add('hidden')" class="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-white transition-colors">Clear</button>
                     </div>
@@ -166,7 +164,7 @@
                 
                 <section class="space-y-10 animate-entry" style="animation-delay: 0.2s">
                     <div class="flex items-center gap-6">
-                        <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-white/20">Collection Metadata</h2>
+                        <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-white/20">Your Wardrobe</h2>
                         <div class="h-px flex-1 bg-white/5"></div>
                     </div>
                     
@@ -281,7 +279,7 @@
             }
         } catch (err) {
             console.error(err);
-            const msg = "Connection lost during spectral sync.";
+            const msg = "Request failed. Please try again.";
             if (window.showError) window.showError(msg);
             errorMsg.innerText = msg;
             errorDiv.classList.remove('hidden');
@@ -324,7 +322,7 @@
             }
             
             if (!combos || combos.length === 0) {
-                if (window.showError) window.showError("Zero resonances found. Try adding more variety.");
+                if (window.showError) window.showError("No results found. Try adding more variety.");
                 return;
             }
             
@@ -365,7 +363,7 @@
             </div>
         `).join('');
         resultsSection.scrollIntoView({ behavior: 'smooth' });
-        updateSila("Sartorial synthesis complete. I've curated a high-frequency capsule based on your chromatic metadata.");
+        updateSila("Outfits generated based on your wardrobe and color profile.");
     }
 
 
@@ -392,7 +390,7 @@
 
             await fetchWardrobe();
             resultsSection.classList.add('hidden');
-            updateSila("Wardrobe collection cleared. Ready for a fresh start.");
+            updateSila("Wardrobe cleared.");
         } catch (err) {
             console.error(err);
             alert("Error clearing collection. Please try again.");

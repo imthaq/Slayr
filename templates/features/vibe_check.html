@@ -139,14 +139,9 @@
     <div class="max-w-6xl mx-auto space-y-16">
 
         <header class="text-center space-y-4 animate-entry">
-            <div class="flex items-center justify-center gap-3">
-                <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-[#ffb0d8]">Aura Ritual</h2>
-                <div class="h-2 w-2 rounded-full bg-[#ffb0d8] animate-pulse"></div>
-            </div>
+            
             <h1 class="text-5xl md:text-6xl font-black text-white tracking-tighter">Vibe <span
                     class="text-transparent bg-clip-text bg-gradient-to-r from-[#ffb0d8] to-white/40">Check</span></h1>
-            <p class="text-white/40 font-playfair italic text-lg md:text-xl max-w-xl mx-auto">Calibrate your seasonal
-                resonance and synthesize your harmonic palette.</p>
         </header>
 
         <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
@@ -166,7 +161,7 @@
                             </svg>
                         </div>
                         <div class="space-y-2">
-                            <p class="text-[10px] font-black uppercase tracking-widest text-[#ffb0d8]">Vibe Input</p>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-[#ffb0d8]">Photo</p>
                             <p class="text-[8px] text-white/20 leading-relaxed uppercase tracking-wider">Initialize
                                 Color Theory Analysis</p>
                         </div>
@@ -195,28 +190,26 @@
                 </div>
                 {% endif %}
 
-                <button type="submit" class="w-full btn-action">Analyze Aura</button>
+                <button type="submit" class="w-full btn-action">Analyze</button>
             </div>
 
             <div class="lg:col-span-2 space-y-12 animate-entry" style="animation-delay: 0.2s">
                 {% if fashion_palette %}
                 <div class="glass-card-premium flex-grow p-10 space-y-10">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-[10px] font-black uppercase tracking-[0.4em] text-[#ffb0d8]">Synthesis Matrix
+                        <h3 class="text-[10px] font-black uppercase tracking-[0.4em] text-[#ffb0d8]">Your Results
                         </h3>
-                        <div class="status-badge">Aura Locked</div>
+                        <div class="status-badge">Done</div>
                     </div>
 
                     <div class="space-y-10">
                         <div class="flex flex-wrap gap-6 justify-center">
                             <div class="analysis-pill px-10">
-                                <p class="text-[7px] font-black uppercase tracking-widest text-white/30 mb-1">Dermal
-                                    Frequency</p>
+                                <p class="text-[7px] font-black uppercase tracking-widest text-white/30 mb-1">Skin Tone</p>
                                 <p class="text-xs font-black text-white uppercase">{{ skin_tone }}</p>
                             </div>
                             <div class="analysis-pill px-10">
-                                <p class="text-[7px] font-black uppercase tracking-widest text-white/30 mb-1">Base
-                                    Resonance</p>
+                                <p class="text-[7px] font-black uppercase tracking-widest text-white/30 mb-1">Undertone</p>
                                 <p class="text-xs font-black text-white uppercase">{{ undertone_base }}</p>
                             </div>
                             <div class="analysis-pill px-10">
@@ -226,18 +219,12 @@
                             </div>
                         </div>
 
-                        <div class="bg-white/5 border border-white/5 p-8 rounded-[35px] text-center">
-                            <p class="text-[#ffb0d8]/60 font-playfair italic text-xl leading-relaxed max-w-2xl mx-auto">
-                                "{{ fashion_palette.why }}"
-                            </p>
-                        </div>
                     </div>
 
                     <div class="scroll-container space-y-10">
 
                         <div class="space-y-6">
-                            <p class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8]">Recommended
-                                Spectrum</p>
+                            <p class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8]">Recommended Colors</p>
                             <div class="flex flex-wrap gap-6">
                                 {% for color in fashion_palette.recommended %}
                                 <div class="swatch-item">
@@ -325,7 +312,7 @@
                     <div class="space-y-2 relative z-10 text-center">
                         <p class="text-2xl font-playfair italic text-white/40">Awaiting Spectral Signal...</p>
                         <p class="text-[9px] font-black uppercase tracking-[0.4em] text-[#ffb0d8]/50">Neural Analysis
-                            Module Offline</p>
+                            </p>
                     </div>
                     <div
                         class="absolute inset-0 bg-gradient-to-b from-transparent to-white/5 pointer-events-none rounded-[40px]">
@@ -346,7 +333,7 @@
         artElementId: 'portal-art',
         laserElementId: 'scan-laser',
         isMain: true,
-        onFileSelected: () => updateSila("Aura sample captured. Ready for seasonal calibration.")
+        onFileSelected: () => updateSila("Photo received. Ready to analyze.")
     });
 
     const initialImage = dropZone.dataset.uploadedImage;
@@ -358,13 +345,13 @@
 
     {% if fashion_palette %}
     setTimeout(() => {
-        updateSila("Aura calibration complete. You resonate with the <span class='text-[#ffb0d8] font-black'>{{ season }}</span> spectrum.");
+        updateSila("{{ season }}. {{ fashion_palette.why }}");
     }, 1000);
     {% endif %}
 
     {% if error %}
     setTimeout(() => {
-        updateSila("⚠️ <span class='text-red-400'>Calibration Failed: {{ error }}</span>");
+        updateSila("⚠️ <span class='text-red-400'>Failed: {{ error }}</span>");
     }, 500);
     {% endif %}
 </script>

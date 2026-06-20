@@ -136,12 +136,8 @@
     <div class="max-w-6xl mx-auto space-y-16">
 
         <header class="text-center space-y-4 animate-entry">
-            <div class="flex items-center justify-center gap-3">
-                <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-[#ffb0d8]">Spectral Ritual</h2>
-                <div class="h-2 w-2 rounded-full bg-[#ffb0d8] animate-pulse"></div>
-            </div>
+            
             <h1 class="text-5xl md:text-6xl font-black text-white tracking-tighter">Chroma <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#ffb0d8] to-white/40">Skin</span></h1>
-            <p class="text-white/40 font-playfair italic text-lg md:text-xl max-w-xl mx-auto">Decode your dermal signature and reveal your natural chromatic resonance.</p>
         </header>
 
         <form method="POST" action="{{ url_for('chroma_skin') }}" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-start">
@@ -155,7 +151,7 @@
                         </div>
                         <div class="space-y-1">
                             <p class="text-xs font-black uppercase tracking-widest text-white/80">Initialize Lens</p>
-                            <p class="text-[9px] text-white/30 leading-relaxed max-w-[180px]">Upload a neutral-lit portrait to begin multi-spectral mapping.</p>
+                            <p class="text-[9px] text-white/30 leading-relaxed max-w-[180px]">Drop your photo here or click to upload.</p>
                         </div>
                     </div>
 
@@ -169,7 +165,7 @@
 
                 <div class="glass-card-premium p-8 space-y-6">
                     <div class="space-y-4">
-                        <label class="text-[10px] font-black uppercase tracking-widest text-white/30">Secondary Sync</label>
+                        <label class="text-[10px] font-black uppercase tracking-widest text-white/30">Wrist Photo (optional)</label>
                         <div id="wrist-zone" class="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between cursor-pointer group hover:bg-white/10 transition-all">
                             <div class="flex items-center gap-4">
                                 <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-110 group-hover:text-[#ffb0d8] transition-transform text-white/40">
@@ -185,7 +181,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full btn-portal">Interpret Spectrum</button>
+                    <button type="submit" class="w-full btn-portal">Analyze</button>
                 </div>
             </div>
 
@@ -193,7 +189,7 @@
                 {% if skin_hex %}
                 <div class="glass-card-premium p-10 space-y-10 relative overflow-hidden flex flex-col justify-center">
                     <div class="absolute top-0 right-0 p-6">
-                        <div class="text-[8px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full bg-[#ffb0d8]/10 text-[#ffb0d8] border border-[#ffb0d8]/20">Synthesis Complete</div>
+                        <div class="text-[8px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full bg-[#ffb0d8]/10 text-[#ffb0d8] border border-[#ffb0d8]/20">Done</div>
                     </div>
 
                     <div class="space-y-10">
@@ -202,7 +198,7 @@
 
                             <div class="w-full space-y-8 text-center">
                                 <div class="space-y-1">
-                                    <p class="text-[10px] font-black uppercase tracking-widest text-[#ffb0d8]">Dermal Frequency</p>
+                                    <p class="text-[10px] font-black uppercase tracking-widest text-[#ffb0d8]">Skin Tone</p>
                                     <p class="text-6xl md:text-7xl font-black text-white tracking-tighter">{{ skin_hex.upper() }}</p>
                                 </div>
 
@@ -226,17 +222,6 @@
                         </div>
                     </div>
 
-                    <div class="bg-white/5 border border-white/10 p-6 rounded-3xl flex items-start gap-5">
-                        <div class="w-12 h-12 rounded-full overflow-hidden bg-white/10 shrink-0 border border-white/20">
-                            <img src="{{ url_for('static', filename='assets/sila_stylist.png') }}" class="w-full h-full object-contain">
-                        </div>
-                        <div class="space-y-1 pt-1">
-                            <p class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8]">Sila's Verdict</p>
-                            <p class="text-white/60 font-playfair italic text-sm md:text-base leading-relaxed">
-                                "Your spectral leaning is clear. Harmonize with soft berry tones and avoid high-contrast neons to maintain aesthetic balance."
-                            </p>
-                        </div>
-                    </div>
                 </div>
                 {% elif error %}
                 <div class="glass-card-premium p-12 h-full flex flex-col items-center justify-center text-center space-y-8 min-h-[500px]">
@@ -247,7 +232,7 @@
                         <p class="text-xl font-playfair italic text-white/60">Analysis Interrupted</p>
                         <p class="text-[8px] font-black uppercase tracking-[0.3em] text-red-400/60">{{ error }}</p>
                     </div>
-                    <button onclick="location.reload()" class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8] hover:underline">Retry Initialization</button>
+                    <button onclick="location.reload()" class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8] hover:underline">Try again</button>
                 </div>
                 {% else %}
                 <div class="glass-card-premium p-12 flex flex-col items-center justify-center text-center space-y-6 min-h-[500px] border-dashed border-2">
@@ -260,7 +245,7 @@
                     </div>
                     <div class="space-y-2 relative z-10 text-center">
                         <p class="text-2xl font-playfair italic text-white/40">Awaiting Chromatic Signal...</p>
-                        <p class="text-[9px] font-black uppercase tracking-[0.4em] text-[#ffb0d8]/50">Neural Analysis Module Offline</p>
+                        <p class="text-[9px] font-black uppercase tracking-[0.4em] text-[#ffb0d8]/50">Upload a photo to begin.</p>
                     </div>
                     <div class="absolute inset-0 bg-gradient-to-b from-transparent to-white/5 pointer-events-none rounded-[40px]"></div>
                 </div>
@@ -279,7 +264,7 @@
         artElementId: 'scan-art',
         laserElementId: 'scan-laser',
         isMain: true,
-        onFileSelected: () => updateSila("Decoding your spectrum. Ensure your profile is in high resonance.")
+        onFileSelected: () => updateSila("Photo received. Detecting your color season...")
     });
 
     const wristUpload = new UploadPortal({
@@ -287,7 +272,7 @@
         inputId: 'wrist-input',
         previewId: 'wrist-preview',
         isMain: false,
-        onFileSelected: () => updateSila("Secondary sync established. Precision levels increasing.")
+        onFileSelected: () => updateSila("Wrist photo added. Undertone reading improved.")
     });
 
     // Load initial images if exist
@@ -309,13 +294,13 @@
 
     {% if skin_hex %}
     setTimeout(() => {
-        updateSila("Synthesis complete. Your unique frequency is <span class='text-[#ffb0d8] font-black'>{{ skin_hex }}</span>.");
+        updateSila("Done. Your skin tone is <span class='text-[#ffb0d8] font-black'>{{ skin_hex }}</span>.");
     }, 1000);
     {% endif %}
 
     {% if error %}
     setTimeout(() => {
-        updateSila("⚠️ <span class='text-red-400'>Analysis Interrupted: {{ error }}</span>");
+        updateSila("⚠️ <span class='text-red-400'>Analysis failed: {{ error }}</span>");
     }, 500);
     {% endif %}
 </script>

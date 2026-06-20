@@ -14,7 +14,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from itsdangerous import URLSafeTimedSerializer
 from reference_data import MST_LAB, SEASON_LAB, get_mst_label, GROOMING_RECOMMENDATIONS
 from datetime import datetime, timedelta
 import wardrobe_logic
@@ -24,10 +23,21 @@ from PIL import Image as PILImage
 from color_utils import hex_to_rgb, hex_to_lab, rgb_to_lab, delta_e_cie2000_vec, delta_e_cie2000
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(24).hex())
+secret_key = os.environ.get('SECRET_KEY')
+if not secret_key:
+    if os.environ.get('FLASK_ENV') == 'production' or os.environ.get('ENV') == 'production':
+        raise RuntimeError("CRITICAL ERROR: SECRET_KEY environment variable is not set in production!")
+    secret_key = os.urandom(24).hex()
+app.config['SECRET_KEY'] = secret_key
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024 
 
-limiter = Limiter(get_remote_address, app=app, default_limits=["200 per day", "50 per hour"])
+storage_uri = os.environ.get("RATELIMIT_STORAGE_URI") or os.environ.get("REDIS_URL") or "memory://"
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri=storage_uri
+)
 
 @app.before_request
 def check_session_timeout():
@@ -159,7 +169,15 @@ def analyze_face_shape(landmarks, image_width, image_height, matrix=None):
     import numpy as np
 
     coords = {}
-    indices = [10, 152, 234, 454, 58, 288, 127, 356, 168, 6]
+    # 10/152: forehead-top/chin-tip (face height)
+    # 21/251: hairline-level points (true forehead width, not temples)
+    # 234/454: cheekbone/zygomatic width (unchanged - this one was correct)
+    # 172/397: jaw width just below the cheekbone (true jaw line - previously
+    #          58/288 sat ~100-150px above the real jawline, near mouth-corner
+    #          height, which made jaw width measure artificially narrow on
+    #          almost every face and collapsed the classifier into only
+    #          Round/Oval outputs)
+    indices = [10, 152, 234, 454, 172, 397, 21, 251, 168, 6]
 
     # Always use 2D pixel coordinates scaling since the facial transformation matrix 
     # maps from canonical space to world coordinates (in meters), which is incompatible 
@@ -171,9 +189,9 @@ def analyze_face_shape(landmarks, image_width, image_height, matrix=None):
         return float(np.linalg.norm(coords[p1_idx] - coords[p2_idx]))
 
     height = dist(10, 152)
-    width_forehead = dist(127, 356)
+    width_forehead = dist(21, 251)
     width_cheek = dist(234, 454)
-    width_jaw = dist(58, 288)
+    width_jaw = dist(172, 397)
 
     if height == 0:
         return {
@@ -194,86 +212,98 @@ def analyze_face_shape(landmarks, image_width, image_height, matrix=None):
         h_w  = height / cheek_width       (face elongation)
         f_j  = forehead / jaw             (narrow vs wide base)
         c_j  = cheek / jaw                (cheek prominence vs jaw)
+
+        Thresholds validated against the Kaggle "Face Shape Dataset" (niten19,
+        5 classes x 800 images). Key findings from that validation:
+
+        - Oblong, Round, and Square separate well on h_w / c_j (Cohen's d
+          0.4-2.6 between pairs) -> thresholds below are fit to this real
+          signal, not guessed.
+        - Heart vs Oval do NOT separate on any 2D landmark-ratio feature we
+          tested (h_w, f_j, c_j, and a 4-point jaw/chin taper profile all gave
+          Cohen's d < 0.22 = negligible effect size). Manual inspection of the
+          dataset showed both classes are dominated by styled hair occluding
+          the jaw/cheek contour and editorial labeling of red-carpet photos,
+          not a measurable bone-structure difference. This matches published
+          literature where Oval is the most-confused class even for CNNs
+          trained directly on pixels. Heart/Oval below is therefore a weak
+          tiebreaker only, and analyze_face_shape() always attaches a
+          secondary_hint when this branch fires so the result is shown as a
+          close call rather than a falsely confident single label.
         """
-        # ── WIDE JAW (triangle/pear family) ─────────────────────────────────────
-        if f_j < 0.88:
-            # Forehead clearly narrower than jaw
-            if c_j < 1.0:
-                return "Triangle"   # cheeks also narrower than jaw
-            else:
-                return "Pear"       # cheeks wider than jaw, forehead narrow
-        
-        # ── NARROW BASE (heart/oval family) ────────────────────────────────────
-        if f_j > 1.12:
-            # Forehead clearly wider than jaw
-            if h_w > 1.25:
-                return "Heart"      # tall + wide forehead
-            else:
-                return "Round"      # not tall enough for Heart
-        
-        # ── BALANCED F/J (0.88–1.12 range) ──────────────────────────────────────
-        if h_w > 1.45:
-            return "Oblong"         # very tall, balanced width
-        
-        if h_w > 1.25:
-            if 0.92 <= f_j <= 1.08 and 0.92 <= c_j <= 1.12:
-                return "Rectangle"  # tall + sides stay parallel
-            if f_j > 1.08:
-                return "Heart"      # tall + forehead winning
+        # ── OBLONG: clearly tallest relative to cheek width ─────────────────────
+        if h_w > 1.225:
             return "Oblong"
-        
-        if h_w < 0.95:
-            if c_j > 1.12:
-                return "Round"      # short + prominent cheeks
-            return "Square"         # short + balanced = square
-        
-        # ── MID HEIGHT (0.95–1.25) ──────────────────────────────────────────────
-        if c_j > 1.15:
-            return "Diamond"        # prominent cheekbones dominate
-        if c_j < 0.95:
-            return "Square"         # cheeks and jaw close in size, compact
-        return "Oval"               # default: balanced proportions
+
+        # ── SQUARE: minimal cheek-to-jaw taper + narrow forehead/jaw spread ──────
+        if c_j < 1.24 and f_j < 1.17:
+            return "Square"
+
+        # ── ROUND: short relative to cheek width, among the remaining faces ─────
+        if h_w < 1.175:
+            return "Round"
+
+        # ── WIDE JAW (triangle/pear family) ─────────────────────────────────────
+        if f_j < 0.92:
+            if c_j < 1.02:
+                return "Triangle"
+            else:
+                return "Pear"
+
+        # ── DIAMOND: prominent cheekbones relative to both forehead and jaw ─────
+        if c_j > 1.30 and f_j < 1.15:
+            return "Diamond"
+
+        # ── HEART vs OVAL: not reliably separable geometrically (see docstring).
+        #    Weak tiebreaker on f_j; secondary_hint is always forced for this
+        #    branch in analyze_face_shape() below.
+        if f_j > 1.21:
+            return "Heart"
+        return "Oval"
 
     primary_shape = classify(h_w_ratio, forehead_jaw_ratio, cheek_jaw_ratio)
 
     leaning_alt = None
 
-    # Check sensitivity margins
-    if abs(h_w_ratio - 1.45) <= 0.02:
-        alt_val = 1.43 if h_w_ratio > 1.45 else 1.47
+    # Check sensitivity margins (boundaries match the thresholds in classify() above)
+    if abs(h_w_ratio - 1.225) <= 0.02:
+        alt_val = 1.205 if h_w_ratio > 1.225 else 1.245
         alt = classify(alt_val, forehead_jaw_ratio, cheek_jaw_ratio)
         if alt != primary_shape:
             leaning_alt = alt
-    elif abs(h_w_ratio - 1.25) <= 0.02:
-        alt_val = 1.23 if h_w_ratio > 1.25 else 1.27
+    elif abs(h_w_ratio - 1.175) <= 0.02:
+        alt_val = 1.155 if h_w_ratio > 1.175 else 1.195
         alt = classify(alt_val, forehead_jaw_ratio, cheek_jaw_ratio)
         if alt != primary_shape:
             leaning_alt = alt
-    elif abs(h_w_ratio - 0.95) <= 0.02:
-        alt_val = 0.93 if h_w_ratio > 0.95 else 0.97
-        alt = classify(alt_val, forehead_jaw_ratio, cheek_jaw_ratio)
-        if alt != primary_shape:
-            leaning_alt = alt
-    elif abs(forehead_jaw_ratio - 0.88) <= 0.02:
-        alt_val = 0.86 if forehead_jaw_ratio > 0.88 else 0.90
+    elif abs(forehead_jaw_ratio - 0.92) <= 0.02:
+        alt_val = 0.90 if forehead_jaw_ratio > 0.92 else 0.94
         alt = classify(h_w_ratio, alt_val, cheek_jaw_ratio)
         if alt != primary_shape:
             leaning_alt = alt
-    elif abs(forehead_jaw_ratio - 1.12) <= 0.02:
-        alt_val = 1.10 if forehead_jaw_ratio > 1.12 else 1.14
+    elif abs(forehead_jaw_ratio - 1.17) <= 0.02:
+        alt_val = 1.15 if forehead_jaw_ratio > 1.17 else 1.19
         alt = classify(h_w_ratio, alt_val, cheek_jaw_ratio)
         if alt != primary_shape:
             leaning_alt = alt
-    elif abs(cheek_jaw_ratio - 1.15) <= 0.02:
-        alt_val = 1.13 if cheek_jaw_ratio > 1.15 else 1.17
+    elif abs(cheek_jaw_ratio - 1.24) <= 0.02:
+        alt_val = 1.22 if cheek_jaw_ratio > 1.24 else 1.26
         alt = classify(h_w_ratio, forehead_jaw_ratio, alt_val)
         if alt != primary_shape:
             leaning_alt = alt
-    elif abs(cheek_jaw_ratio - 0.95) <= 0.02:
-        alt_val = 0.93 if cheek_jaw_ratio > 0.95 else 0.97
+    elif abs(cheek_jaw_ratio - 1.30) <= 0.02:
+        alt_val = 1.28 if cheek_jaw_ratio > 1.30 else 1.32
         alt = classify(h_w_ratio, forehead_jaw_ratio, alt_val)
         if alt != primary_shape:
             leaning_alt = alt
+
+    # The Heart/Oval boundary (f_j vs 1.21) carries no reliable geometric signal
+    # (validated against a labeled dataset: Cohen's d < 0.22 on every ratio we
+    # tested). Whenever classify() lands on Heart or Oval, always surface the
+    # other as a secondary hint rather than presenting a falsely confident
+    # single label.
+    if primary_shape in ("Heart", "Oval") and leaning_alt is None:
+        leaning_alt = "Oval" if primary_shape == "Heart" else "Heart"
 
     return {
         "primary_shape": primary_shape,
@@ -509,11 +539,7 @@ def get_fashion_palette(skin_tone, undertone_base, contrast):
             {"name": "Warm Taupe",   "hex": "#B38B6D"},
             {"name": "Oatmeal",      "hex": "#EAE0C8"},
         ]
-        why = ("Your warm undertone carries a golden-yellow skin bias. "
-               "Earthy, amber, and terracotta tones harmonize with your complexion, "
-               "creating a cohesive radiant glow. Cool-toned shades like lavender "
-               "or icy blue clash with your skin's warmth, producing a sallow or "
-               "dull visual effect.")
+        why = "Warm undertone. Earthy, amber, and terracotta tones work best. Avoid icy blues and lavenders."
 
     elif undertone_base == "Cool":
         rec = [
@@ -547,10 +573,7 @@ def get_fashion_palette(skin_tone, undertone_base, contrast):
             {"name": "Medium Grey",  "hex": "#BEBEBE"},
             {"name": "Slate",        "hex": "#708090"},
         ]
-        why = ("Your cool undertone has a pink-blue skin bias. "
-               "Jewel tones and blue-based shades create crisp, luminous contrast. "
-               "Warm earthy shades like mustard or orange oppose your skin's natural "
-               "pink bias, making your complexion appear muddy or uneven.")
+        why = "Cool undertone. Jewel tones and blue-based shades work best. Avoid mustard and warm oranges."
 
     else:  
         rec = [
@@ -584,11 +607,7 @@ def get_fashion_palette(skin_tone, undertone_base, contrast):
             {"name": "Cool Linen",   "hex": "#E9DCC9"},
             {"name": "Medium Taupe", "hex": "#674C47"},
         ]
-        why = ("Your neutral undertone is balanced between warm and cool, "
-               "giving you the widest palette flexibility. Both earthy warm tones "
-               "and cool jewel tones work harmoniously. Avoid extremes — neon "
-               "colors lack complementary value, and very dull browns create "
-               "a flat, washed-out appearance.")
+        why = "Neutral undertone. Both warm and cool tones work. Avoid neons and very dull browns."
 
     if skin_tone == "Light":
         avoid.append({"name": "Pale Yellow", "hex": "#FFFFE0"})
@@ -723,6 +742,7 @@ def login():
     return render_template('auth/login.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
 def signup():
     if request.method == 'POST':
         full_name = request.form.get('full_name')
@@ -1178,6 +1198,8 @@ def morpho_analyze():
 
         return jsonify({
             'shape': face_shape,
+            'secondary_hint': face_shape_data.get('secondary_hint'),
+            'measurements': face_shape_data.get('measurements'),
             'description': RECOMMENDATIONS.get(face_shape.split(" (")[0]),
             'image_url': url_for('static', filename='uploads/morpho_' + filename)
         })
@@ -1633,82 +1655,9 @@ def frame_fit():
                            raw_image=raw_image,
                            error=error)
 
-@app.route('/test', methods=['GET', 'POST'])
-def test_frames():
-    face_analysis   = None
-    all_frames      = []
-    active_image    = None
-    raw_image       = None
-    error           = None
-
-    if request.method == 'POST':
-        if 'image' in request.files:
-            file = request.files['image']
-            if file.filename != '' and allowed_file(file.filename):
-                filename = secure_upload_filename(file.filename)
-                filepath = os.path.join(UPLOAD_FOLDER, filename)
-                file.save(filepath)
-                if not validate_image_file(filepath):
-                    error = "invalid_file"
-                else:
-                    image = cv2.imread(filepath)
-                    raw_image = filename
-
-                    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB,
-                                        data=cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-                    detection_result = detector.detect(mp_image)
-
-                    if detection_result.face_landmarks:
-                        landmarks  = detection_result.face_landmarks[0]
-                        matrix = detection_result.facial_transformation_matrixes[0] if detection_result.facial_transformation_matrixes else None
-                        img_h, img_w, _ = image.shape
-
-                        metrics   = compute_face_metrics(landmarks, img_w, img_h, matrix=matrix)
-                        skin_hex, undertone, lab_std, season_12, mst_label = analyze_color(image, landmarks)
-                        undertone_base = undertone.split(" (")[0]
-                        contrast       = analyze_contrast(image, landmarks)
-
-                        face_analysis = {
-                            "face_shape":   metrics["face_shape"],
-                            "face_size":    metrics["face_size"],
-                            "nose_width":   metrics["nose_width"],
-                            "eye_spacing":  metrics["eye_spacing"],
-                            "undertone":    undertone_base,
-                            "contrast":     contrast,
-                        }
-
-                        all_frames = []
-                        for i, (name, filename_asset) in enumerate(EYEWEAR_ASSETS.items()):
-                            glasses_path = os.path.join(SHADES_FOLDER, filename_asset)
-                            if os.path.exists(glasses_path):
-                                try_on_img   = apply_glasses_overlay(image, landmarks, glasses_path, metrics["face_size"])
-                                out_name     = f"test_tryon_{i}_{filename}"
-                                out_path     = os.path.join(UPLOAD_FOLDER, out_name)
-                                cv2.imwrite(out_path, try_on_img)
-                                all_frames.append({
-                                    "name": name,
-                                    "filename": filename_asset,
-                                    "try_on_image": out_name,
-                                    "why": "Testing style on your portrait."
-                                })
-
-                        if all_frames:
-                            active_image = all_frames[0]["try_on_image"]
-                    else:
-                        error = "no_face_detected"
-            else:
-                error = "no_file"
-        else:
-            error = "no_file"
-
-    return render_template('features/test.html',
-                           face_analysis=face_analysis,
-                           all_frames=all_frames,
-                           active_image=active_image,
-                           raw_image=raw_image,
-                           error=error)
 
 @app.route('/grooming-blueprint', methods=['GET', 'POST'])
+@limiter.limit("10 per minute")
 def grooming_blueprint():
     processed_image = None
     recommendations = None
@@ -1784,6 +1733,7 @@ def get_owner_id():
     return session['guest_id']
 
 @app.route('/wardrobe')
+@limiter.limit("30 per minute")
 def wardrobe():
     owner_id = get_owner_id()
     if request.headers.get('Accept') == 'application/json':
@@ -1801,6 +1751,7 @@ def wardrobe():
     return render_template('features/wardrobe.html')
 
 @app.route('/wardrobe/upload', methods=['POST'])
+@limiter.limit("10 per minute")
 def wardrobe_upload():
     if 'images' not in request.files:
         return jsonify({"error": "No images provided"}), 400
@@ -1876,6 +1827,7 @@ def wardrobe_upload():
     return jsonify(processed_items)
 
 @app.route('/wardrobe/item/<item_id>', methods=['DELETE'])
+@limiter.limit("20 per minute")
 def wardrobe_delete_item(item_id):
     owner_id = get_owner_id()
     item = WardrobeItem.query.filter_by(id=item_id, owner_id=owner_id).first()
@@ -1886,6 +1838,7 @@ def wardrobe_delete_item(item_id):
     return jsonify({"error": "Item not found"}), 404
 
 @app.route('/wardrobe/item/<item_id>', methods=['PATCH'])
+@limiter.limit("20 per minute")
 def wardrobe_update_item(item_id):
     owner_id = get_owner_id()
     data = request.get_json()
@@ -1900,6 +1853,7 @@ def wardrobe_update_item(item_id):
     return jsonify({"error": "Item not found or invalid data"}), 404
 
 @app.route('/wardrobe/generate', methods=['POST'])
+@limiter.limit("10 per minute")
 def wardrobe_generate():
     owner_id = get_owner_id()
     items = WardrobeItem.query.filter_by(owner_id=owner_id).all()

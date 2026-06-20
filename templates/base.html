@@ -229,8 +229,7 @@
                 <div id="sila-chat-history"
                     class="max-h-[180px] overflow-y-auto mb-2 custom-scrollbar pr-2 flex flex-col space-y-3">
                     <p id="sila-message" class="text-white/80 font-serif italic text-xs leading-relaxed text-center">
-                        "Hi! I'm <span class="text-dusky-accent font-bold">Sila</span>. I'm here to guide your aesthetic
-                        journey."
+                        "Hi, I'm <span class="text-dusky-accent font-bold">Sila</span>. I'll walk you through your results."
                     </p>
                 </div>
             </div>
@@ -383,7 +382,7 @@
                 container.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
             if (typeof updateSila !== 'undefined') {
-                updateSila(`⚠️ <span class='text-red-400'>Analysis Interrupted: ${msg}</span>`);
+                updateSila(`⚠️ <span class='text-red-400'>Analysis failed: ${msg}</span>`);
             }
         };
 
