@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Frame Fit — Slayr Suite{% endblock %}
+
+{% block content %}
+
+<style>
+    .frame-bg {
+        background: transparent;
+        min-height: 100vh;
+        width: 100%;
+        position: relative;
+    }
+
+    .tryon-portal {
+        aspect-ratio: 1/1;
+        border-radius: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.02);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.5s ease;
+    }
+
+    .tryon-portal:hover {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 176, 216, 0.2);
+    }
+
+    .frame-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 30px;
+        padding: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .frame-card:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: #ffb0d8;
+    }
+
+    .frame-card.active {
+        background: rgba(255, 176, 216, 0.08);
+        border-color: #ffb0d8;
+    }
+
+    .frame-viz {
+        width: 100%;
+        height: 60px;
+        object-fit: contain;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 15px;
+        padding: 8px;
+        margin-bottom: 12px;
+    }
+
+    .badge-status {
+        font-size: 7px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        padding: 4px 10px;
+        border-radius: 50px;
+        background: #ffb0d8;
+        color: #2d1f26;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+    }
+
+    .analysis-pill {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 12px;
+        text-align: center;
+    }
+
+    .scroll-v {
+        max-height: 500px;
+        overflow-y: auto;
+        padding-right: 10px;
+    }
+
+    .scroll-v::-webkit-scrollbar { width: 4px; }
+    .scroll-v::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+    .scroll-v::-webkit-scrollbar-thumb { background: #ffb0d8; border-radius: 10px; }
+</style>
+
+<div class="frame-bg pb-24 px-6">
+    <div class="max-w-6xl mx-auto space-y-16">
+
+        <header class="text-center space-y-4 animate-entry">
+            <div class="flex items-center justify-center gap-3">
+                <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-[#ffb0d8]">Structural Ritual</h2>
+                <div class="h-2 w-2 rounded-full bg-[#ffb0d8] animate-pulse"></div>
+            </div>
+            <h1 class="text-6xl font-black text-white tracking-tighter">Frame <span class="text-white/20">Fit</span></h1>
+            <p class="text-white/40 font-playfair italic text-xl max-w-xl mx-auto">Architectural eyewear synthesis. Map your facial geometry against our curated optic library.</p>
+        </header>
+
+        <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
+
+            <div class="lg:col-span-1 space-y-10 animate-entry" style="animation-delay: 0.1s">
+                <div id="drop-zone" class="tryon-portal group" data-uploaded-image="{{ url_for('static', filename='uploads/' + raw_image) if raw_image else '' }}">
+                    <div id="portal-art" class="absolute inset-0 flex flex-col items-center justify-center p-12 text-center space-y-6 z-10 transition-opacity" {% if raw_image %}style="opacity: 0;"{% endif %}>
+                        <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center text-[#ffb0d8] group-hover:scale-110 transition-transform">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        </div>
+                        <p class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8]">Initialization</p>
+                    </div>
+                    <img id="input-preview" src="{{ url_for('static', filename='uploads/' + raw_image) if raw_image else '' }}" 
+                         class="{% if not raw_image %}hidden{% endif %} absolute inset-0 w-full h-full object-cover z-0" />
+                    <div id="scan-laser" class="scan-line" style="opacity: 0;"></div>
+                    <input type="file" name="image" id="file-input" class="hidden" accept="image/*" required>
+                </div>
+
+                {% if face_analysis %}
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="analysis-pill">
+                        <p class="text-[7px] font-black uppercase tracking-widest text-white/30 mb-1">Architecture</p>
+                        <p class="text-xs font-black text-white uppercase">{{ face_analysis.face_shape }}</p>
+                    </div>
+                    <div class="analysis-pill">
+                        <p class="text-[7px] font-black uppercase tracking-widest text-white/30 mb-1">Scale</p>
+                        <p class="text-xs font-black text-white uppercase">{{ face_analysis.face_size }}</p>
+                    </div>
+                    <div class="analysis-pill">
+                        <p class="text-[7px] font-black uppercase tracking-widest text-white/30 mb-1">Dermal</p>
+                        <p class="text-xs font-black text-white uppercase">{{ face_analysis.undertone }}</p>
+                    </div>
+                    <div class="analysis-pill">
+                        <p class="text-[7px] font-black uppercase tracking-widest text-white/30 mb-1">Contrast</p>
+                        <p class="text-xs font-black text-white uppercase">{{ face_analysis.contrast }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <button type="submit" class="w-full btn-action">Analyze Architecture</button>
+            </div>
+
+            <div class="lg:col-span-2 space-y-12 animate-entry" style="animation-delay: 0.2s">
+                {% if recommended %}
+                <div class="glass-card-premium p-10 space-y-10">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+
+                        <div class="space-y-6">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8]">Virtual Synthesis</p>
+                            <div class="aspect-[3/4] rounded-3xl overflow-hidden border border-white/5 bg-white/2 relative">
+                                {% for frame in recommended %}
+                                <img src="{{ url_for('static', filename='uploads/' + frame.try_on_image) }}" 
+                                     id="tryon-{{ loop.index0 }}" 
+                                     class="tryon-slide w-full h-full object-cover absolute inset-0 transition-opacity duration-500" 
+                                     style="{% if not loop.first %}opacity: 0;{% else %}opacity: 1;{% endif %}">
+                                {% endfor %}
+                                <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
+                                    <p id="active-frame-label" class="text-xs font-black text-white uppercase tracking-widest text-center">{{ recommended[0].name }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-white/30">Curated Library</p>
+                            <div class="scroll-v space-y-4">
+                                {% for frame in recommended %}
+                                <div id="card-{{ loop.index0 }}" 
+                                     onclick="switchFrame({{ loop.index0 }}, '{{ frame.name }}')" 
+                                     class="frame-card {% if loop.first %}active{% endif %}">
+                                    <img src="{{ url_for('static', filename='assets/Copy of shades/' + frame.filename) }}" class="frame-viz">
+                                    <div class="space-y-1">
+                                        <p class="text-[9px] font-black text-white uppercase tracking-widest">{{ frame.name }}</p>
+                                        <p class="text-[8px] font-playfair italic text-white/30 leading-relaxed">{{ frame.why }}</p>
+                                    </div>
+                                    {% if loop.first %}<span class="badge-status">Prime Match</span>{% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            {% if avoid %}
+                            <div class="pt-6 border-t border-white/5 space-y-4">
+                                <p class="text-[8px] font-black uppercase tracking-widest text-red-400/40">Dissonant Shapes</p>
+                                <div class="flex flex-wrap gap-2">
+                                    {% for item in avoid %}
+                                    <span class="text-[8px] font-black uppercase tracking-widest text-white/20 border border-white/5 px-3 py-1 rounded-full">{{ item.name }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="bg-white/5 border border-white/5 p-8 rounded-3xl flex items-start gap-6">
+                        <div class="w-12 h-12 rounded-full overflow-hidden bg-white/10 shrink-0">
+                            <img src="{{ url_for('static', filename='assets/sila_stylist.png') }}" class="w-full h-full object-contain">
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8]">Sila's Verdict</p>
+                            <p class="text-[#ffb0d8]/40 font-playfair italic text-lg leading-relaxed">
+                                "Your {{ face_analysis.face_shape }} architecture demands structured frame geometry. These selections provide optimal horizontal balance for your profile."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% elif error %}
+                <div class="glass-card-premium p-12 h-full flex flex-col items-center justify-center text-center space-y-8 min-h-[500px]">
+                    <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-red-400 mx-auto">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-xl font-playfair italic text-white/60">Mapping Interrupted</p>
+                        <p class="text-[8px] font-black uppercase tracking-[0.3em] text-red-400/60">{{ error }}</p>
+                    </div>
+                    <button onclick="location.reload()" class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8] hover:underline">Retry Initialization</button>
+                </div>
+                {% else %}
+                <div class="glass-card-premium p-12 h-full flex flex-col items-center justify-center text-center space-y-8 min-h-[500px]">
+                    <div class="w-16 h-16 bg-white/2 rounded-full flex items-center justify-center text-white/5 mx-auto">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-xl font-playfair italic text-white/20">Awaiting Geometric Signal...</p>
+                        <p class="text-[8px] font-black uppercase tracking-[0.3em] text-white/10">Neural Analysis Module Offline</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('file-input');
+    const dropZone = document.getElementById('drop-zone');
+    const portalArt = document.getElementById('portal-art');
+    const activeLabel = document.getElementById('active-frame-label');
+
+    // Initialize upload handler
+    const frameUpload = new UploadPortal({
+        zoneId: 'drop-zone',
+        inputId: 'file-input',
+        previewId: 'input-preview',
+        artElementId: 'portal-art',
+        laserElementId: 'scan-laser',
+        isMain: true,
+        onFileSelected: () => updateSila("Profile captured. Ready to map frame architecture.")
+    });
+
+    // Load initial image if exists
+    if (dropZone.dataset.uploadedImage) {
+        const inputPreview = document.getElementById('input-preview');
+        inputPreview.src = dropZone.dataset.uploadedImage;
+        inputPreview.classList.remove('hidden');
+        portalArt.style.opacity = '0';
+    }
+
+    window.switchFrame = function(idx, name) {
+        document.querySelectorAll('.tryon-slide').forEach(s => s.style.opacity = '0');
+        document.querySelectorAll('.frame-card').forEach(c => c.classList.remove('active'));
+
+        document.getElementById('tryon-' + idx).style.opacity = '1';
+        document.getElementById('card-' + idx).classList.add('active');
+        activeLabel.textContent = name;
+
+        updateSila("Evaluating the <span class='text-[#ffb0d8] font-black'>" + name + "</span> geometry on your profile.");
+    }
+
+    {% if recommended %}
+    setTimeout(() => {
+        updateSila("Sythesis complete. {{ recommended|length }} optic matches found for your <span class='text-[#ffb0d8] font-black'>{{ face_analysis.face_shape }}</span> profile.");
+    }, 1000);
+    {% endif %}
+
+    {% if error %}
+    setTimeout(() => {
+        updateSila("⚠️ <span class='text-red-400'>Analysis Interrupted: {{ error }}</span>");
+    }, 500);
+    {% endif %}
+</script>
+
+{% endblock %}

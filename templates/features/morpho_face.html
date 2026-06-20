@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block title %}Morpho Face — Slayr Suite{% endblock %}
+
+{% block content %}
+
+<style>
+    .morpho-bg {
+        background: transparent;
+        min-height: 100vh;
+        width: 100%;
+        position: relative;
+    }
+
+    .mesh-portal {
+        aspect-ratio: 3/4;
+        border-radius: 40px;
+        border: 2px dashed rgba(255, 176, 216, 0.2);
+        background: rgba(255, 255, 255, 0.02);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .mesh-portal:hover {
+        background: rgba(255, 176, 216, 0.05);
+        border-color: rgba(255, 176, 216, 0.5);
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 0 60px rgba(255, 176, 216, 0.05);
+    }
+
+    .mesh-line {
+        stroke: rgba(255, 176, 216, 0.3);
+        stroke-width: 0.5;
+        fill: none;
+        animation: pulseLine 4s ease-in-out infinite;
+    }
+
+    .scan-line {
+        position: absolute;
+        width: 100%;
+        height: 1px;
+        background: #ffb0d8;
+        box-shadow: 0 0 15px #ffb0d8;
+        z-index: 20;
+        animation: scanning 3s ease-in-out infinite;
+        opacity: 0;
+    }
+
+    .archetype-orb {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        border: 4px solid rgba(255, 255, 255, 0.05);
+        overflow: hidden;
+        position: relative;
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .btn-action {
+        background: linear-gradient(135deg, #ffb0d8, #d48bb7);
+        color: #2d1f26;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        padding: 18px 0;
+        border-radius: 100px;
+        transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        box-shadow: 0 10px 30px rgba(255, 176, 216, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .btn-action:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(255, 176, 216, 0.4);
+        border-color: white;
+    }
+
+    .studio-mapping-box {
+        aspect-ratio: 3/4;
+        border-radius: 30px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.02);
+        position: relative;
+    }
+</style>
+
+<div class="morpho-bg pb-24 px-6">
+    <div class="max-w-5xl mx-auto space-y-16">
+
+        <header class="text-center space-y-4 animate-entry">
+            <div class="flex items-center justify-center gap-3">
+                <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-[#ffb0d8]">Geometric Ritual</h2>
+                <div class="h-2 w-2 rounded-full bg-[#ffb0d8] animate-pulse"></div>
+            </div>
+            <h1 class="text-5xl md:text-6xl font-black text-white tracking-tighter">Morpho <span
+                    class="text-transparent bg-clip-text bg-gradient-to-r from-[#ffb0d8] to-white/40">Face</span></h1>
+            <p class="text-white/40 font-playfair italic text-lg md:text-xl max-w-xl mx-auto">Map your cranial topology
+                and synthesize your architectural blueprint.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-start">
+
+            <div class="lg:col-span-1 flex flex-col gap-6 animate-entry" style="animation-delay: 0.1s">
+                <div id="drop-zone" class="mesh-portal group w-full">
+
+                    <div id="mesh-art"
+                        class="absolute inset-0 flex flex-col items-center justify-center z-10 transition-opacity">
+                        <svg viewBox="0 0 200 200" class="w-[70%] h-[70%] opacity-40">
+                            <path d="M100 30 Q140 30 160 70 T160 130 T100 170 T40 130 T40 70 T100 30" class="mesh-line">
+                            </path>
+                            <path d="M60 80 Q100 70 140 80" class="mesh-line"></path>
+                            <path d="M60 120 Q100 130 140 120" class="mesh-line"></path>
+                            <circle cx="100" cy="100" r="2" fill="#ffb0d8" class="animate-pulse"></circle>
+                        </svg>
+                        <div class="mt-4 space-y-2 text-center px-8">
+                            <p class="text-[10px] font-black uppercase tracking-widest text-[#ffb0d8]">Geometric Input
+                            </p>
+                            <p class="text-[8px] text-white/20 leading-relaxed uppercase tracking-wider">Initialize
+                                Facial Mesh Synthesis</p>
+                        </div>
+                    </div>
+
+                    <img id="input-preview" class="hidden absolute inset-0 w-full h-full object-cover z-0" />
+
+                    <div id="scan-laser" class="scan-line"></div>
+
+                    <input type="file" id="file-input" class="hidden" accept="image/*">
+                </div>
+
+                <div class="glass-card-premium p-8 grid grid-cols-3 gap-6">
+                    <div class="text-center space-y-1">
+                        <p class="text-[7px] font-black uppercase tracking-widest text-white/20">Landmarks</p>
+                        <p class="text-xs font-black text-white">468 pts</p>
+                    </div>
+                    <div class="text-center space-y-1 border-x border-white/5">
+                        <p class="text-[7px] font-black uppercase tracking-widest text-white/20">Model</p>
+                        <p class="text-xs font-black text-white">Neural v4</p>
+                    </div>
+                    <div class="text-center space-y-1">
+                        <p class="text-[7px] font-black uppercase tracking-widest text-white/20">Precision</p>
+                        <p class="text-xs font-black text-white">High</p>
+                    </div>
+                </div>
+
+                <button id="analyze-btn" class="w-full btn-action hidden">Map Geometry</button>
+            </div>
+
+            <div class="lg:col-span-2 flex flex-col animate-entry" style="animation-delay: 0.2s">
+                <div id="results-panel"
+                    class="glass-card-premium flex-grow p-10 space-y-10 min-h-[600px] flex flex-col justify-center relative overflow-hidden {% if shape == 'Unknown' %}border-dashed border-2{% endif %}">
+                    {% if shape != 'Unknown' %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+
+                        <div class="space-y-6">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8]">Studio Mapping</p>
+                            <div class="studio-mapping-box">
+                                <img id="result-mapping-img"
+                                    src="{{ url_for('static', filename='uploads/' + active_image) if active_image else '' }}"
+                                    class="w-full h-full object-cover">
+                            </div>
+                        </div>
+
+                        <div class="space-y-10 text-center md:text-left">
+                            <div class="space-y-4">
+                                <p class="text-[10px] font-black uppercase tracking-[0.4em] text-[#ffb0d8]">Primary
+                                    Structure</p>
+                                <h3 id="result-shape" class="text-5xl font-black text-white tracking-tighter uppercase">
+                                    {{ shape }}</h3>
+                                <p id="result-desc" class="text-white/40 font-playfair italic text-lg leading-relaxed">
+                                    {{ description }}
+                                </p>
+                            </div>
+
+                            <div class="bg-white/5 border border-white/5 p-6 rounded-3xl space-y-4 text-left">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-full overflow-hidden bg-white/10">
+                                        <img src="{{ url_for('static', filename='assets/sila_stylist.png') }}"
+                                            class="w-full h-full object-contain">
+                                    </div>
+                                    <p class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8]">Sila's
+                                        Analysis</p>
+                                </div>
+                                <p class="text-[#ffb0d8]/40 font-playfair italic text-sm leading-relaxed">
+                                    "Your <span id="result-sila-shape">{{ shape }}</span> architecture is best
+                                    harmonized with structured, angular accents. Balance is your primary objective."
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="relative w-24 h-24 mb-4 mx-auto">
+                        <div class="absolute inset-0 border-2 border-white/5 rounded-full animate-ping opacity-20">
+                        </div>
+                        <div class="absolute inset-2 border-2 border-[#ffb0d8]/20 rounded-full animate-spin"
+                            style="animation-duration: 3s;"></div>
+                        <div class="absolute inset-0 flex items-center justify-center text-white/10">
+                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                                    d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1V18.5M7 18l-2-1M7 18l2-1M7 18v2.5M20 18l-2 1m2-1l-2-1m2 1v2.5" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="space-y-2 relative z-10 text-center">
+                        <p class="text-2xl font-playfair italic text-white/40">Awaiting Geometric Signal...</p>
+                        <p class="text-[9px] font-black uppercase tracking-[0.4em] text-[#ffb0d8]/50">Neural Analysis
+                            Module Offline</p>
+                    </div>
+                    <div
+                        class="absolute inset-0 bg-gradient-to-b from-transparent to-white/5 pointer-events-none rounded-[40px] z-0">
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="text-center">
+                    <a href="{{ url_for('dashboard') }}"
+                        class="text-[9px] font-black uppercase tracking-widest text-white/20 hover:text-[#ffb0d8] transition-colors">Return
+                        to Studio &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('file-input');
+    const dropZone = document.getElementById('drop-zone');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const inputPreview = document.getElementById('input-preview');
+    const meshArt = document.getElementById('mesh-art');
+    const scanLaser = document.getElementById('scan-laser');
+    const resultsPanel = document.getElementById('results-panel');
+
+    // Initialize upload handler
+    const morphoUpload = new UploadPortal({
+        zoneId: 'drop-zone',
+        inputId: 'file-input',
+        previewId: 'input-preview',
+        artElementId: 'mesh-art',
+        laserElementId: 'scan-laser',
+        isMain: true,
+        onFileSelected: () => {
+            analyzeBtn.classList.remove('hidden');
+            updateSila("Geometry captured. Initiating neural mapping sequence...");
+            resultsPanel.classList.remove('opacity-40', 'grayscale');
+            resultsPanel.style.filter = 'none';
+            resultsPanel.style.opacity = '1';
+        }
+    });
+
+    analyzeBtn.onclick = async () => {
+        analyzeBtn.disabled = true;
+        analyzeBtn.innerText = "Mapping...";
+        updateSila("Synthesizing geometry. Mapping 468 neural landmarks.");
+        resultsPanel.classList.add('opacity-40', 'grayscale');
+
+        const formData = new FormData();
+        formData.append('image', fileInput.files[0]);
+
+        try {
+            const res = await fetch('/morpho-analyze', { method: 'POST', body: formData });
+            const data = await res.json();
+
+            if (data.error) {
+                if (window.showError) window.showError(data.error);
+                morphoUpload.reset();
+                resultsPanel.classList.remove('opacity-40', 'grayscale');
+                resultsPanel.style.filter = 'none';
+                resultsPanel.style.opacity = '1';
+                resultsPanel.innerHTML = `
+                    <div class="space-y-8 flex flex-col items-center justify-center h-full">
+                        <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-red-400">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-xl font-playfair italic text-white/60">Geometric Interrupted</p>
+                            <p class="text-[8px] font-black uppercase tracking-[0.3em] text-red-400/60">${data.error}</p>
+                        </div>
+                        <button onclick="location.reload()" class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8] hover:underline">Retry Initialization</button>
+                    </div>
+                `;
+                return;
+            }
+
+            resultsPanel.classList.remove('opacity-40', 'grayscale');
+            resultsPanel.style.filter = 'none';
+            resultsPanel.style.opacity = '1';
+
+            // Re-render results in panel
+            resultsPanel.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+
+                    <div class="space-y-6">
+                        <p class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8]">Studio Mapping</p>
+                        <div class="studio-mapping-box">
+                            <img src="${data.image_url}" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+
+                    <div class="space-y-10 text-center md:text-left">
+                        <div class="space-y-4">
+                            <p class="text-[10px] font-black uppercase tracking-[0.4em] text-[#ffb0d8]">Primary Structure</p>
+                            <h3 class="text-5xl font-black text-white tracking-tighter uppercase">${data.shape}</h3>
+                            <p class="text-white/40 font-playfair italic text-lg leading-relaxed">${data.description}</p>
+                        </div>
+
+                        <div class="bg-white/5 border border-white/5 p-6 rounded-3xl space-y-4 text-left">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full overflow-hidden bg-white/10">
+                                    <img src="{{ url_for('static', filename='assets/sila_stylist.png') }}" class="w-full h-full object-contain">
+                                </div>
+                                <p class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8]">Sila's Analysis</p>
+                            </div>
+                            <p class="text-[#ffb0d8]/40 font-playfair italic text-sm leading-relaxed">
+                                "Your ${data.shape} architecture is best harmonized with structured, angular accents. Balance is your primary objective."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            updateSila("Geometry synchronized. Your profile archetype is <span class='text-[#ffb0d8] font-black'>" + data.shape + "</span>.");
+        } catch (err) {
+            resultsPanel.classList.remove('opacity-40', 'grayscale');
+            resultsPanel.style.filter = 'none';
+            resultsPanel.style.opacity = '1';
+            updateSila("⚡ Neural connection failed. Try again.");
+        } finally {
+            analyzeBtn.disabled = false;
+            analyzeBtn.innerText = "Map Geometry";
+        }
+    };
+
+    {% if shape != 'Unknown' %}
+    setTimeout(() => {
+        updateSila("Geometric blueprint active. Your structural archetype is <span class='text-[#ffb0d8] font-black'>{{ shape }}</span>.");
+    }, 1000);
+    {% endif %}
+</script>
+
+{% endblock %}

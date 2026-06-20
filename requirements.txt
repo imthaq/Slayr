@@ -1,0 +1,15 @@
+flask
+mediapipe
+opencv-python-headless
+numpy
+pandas
+flask-sqlalchemy
+flask-login
+flask-migrate
+gunicorn
+scikit-learn
+colormath
+Pillow
+flask-limiter
+torch
+transformers

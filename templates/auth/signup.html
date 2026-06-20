@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account — Slayr{% endblock %}
+
+{% block content %}
+<style>
+    main {
+        background: #3d2b36 !important; /* Deep Plum Base */
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 !important;
+        overflow-x: hidden;
+        position: relative;
+    }
+
+    main::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at bottom left, rgba(154, 116, 140, 0.4) 0%, transparent 50%),
+                    radial-gradient(circle at 20% 80%, rgba(182, 151, 168, 0.3) 0%, transparent 60%);
+        filter: blur(80px);
+        opacity: 0.5;
+        z-index: 0;
+    }
+
+    /* Watercolor Cloud Background (Matched to Home) */
+    .aura-bg {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        background: #3d2b36;
+        overflow: hidden;
+    }
+
+    .cloud {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.3;
+        animation: float-cloud 20s infinite alternate ease-in-out;
+    }
+
+    @keyframes float-cloud {
+        from { transform: translate(0, 0) scale(1); }
+        to { transform: translate(100px, 50px) scale(1.2); }
+    }
+
+    .aura-bg .cloud-1 { width: 80vw; height: 80vw; background: rgba(154, 116, 140, 0.4); top: -20%; left: -10%; }
+    .aura-bg .cloud-2 { width: 70vw; height: 70vw; background: rgba(182, 151, 168, 0.3); bottom: -10%; right: -10%; animation-delay: -5s; }
+
+    #sila-guide {
+        display: none !important;
+    }
+
+    .vibe-card {
+        display: block;
+        text-align: center;
+        padding: 10px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 14px;
+        background: rgba(0, 0, 0, 0.2);
+        color: rgba(244, 114, 182, 0.6);
+        font-size: 0.65rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(8px);
+    }
+
+    .vibe-chip input:checked + .vibe-card {
+        background: transparent;
+        border-color: rgba(236, 72, 153, 0.5);
+        color: #f472b6;
+        box-shadow: 0 0 20px rgba(236, 72, 153, 0.2);
+    }
+
+    .vibe-card:hover {
+        border-color: rgba(154, 116, 140, 0.4);
+        background: rgba(154, 116, 140, 0.08);
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .su-input {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 18px;
+        padding: 22px 18px 8px 18px;
+        color: #fff;
+        font-weight: 700;
+        outline: none;
+        transition: all 0.3s ease;
+    }
+
+    .su-input:focus {
+        border-color: #f472b6;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .su-label {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.8rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: rgba(255, 255, 255, 0.5);
+        pointer-events: none;
+        transition: all 0.3s ease;
+    }
+
+    .su-input:focus + label,
+    .su-input:not(:placeholder-shown) + label {
+        top: 25%;
+        font-size: 0.6rem;
+        color: #f472b6;
+    }
+</style>
+
+<div class="aura-bg">
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+</div>
+
+<div class="flex items-center justify-center w-full min-h-screen p-4 xl:p-8 pt-32" style="perspective: 1200px;">
+
+    <div id="signupConsole"
+        class="glass-console w-full max-w-6xl flex flex-col lg:flex-row relative z-10 overflow-hidden"
+        style="background: rgba(0,0,0,0.4); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: 40px; box-shadow: 0 50px 100px rgba(0,0,0,0.5);">
+
+        <div class="flex-1 p-10 lg:p-20 flex flex-col items-center justify-center relative border-b lg:border-b-0 lg:border-r border-white/5"
+            style="background: radial-gradient(circle at 30% 30%, rgba(154,116,140,0.1) 0%, transparent 80%);">
+
+            <div class="text-center space-y-8 relative z-10">
+                <img src="{{ url_for('static', filename='assets/new_logo.png') }}" alt="Slayr" class="h-28 md:h-32 w-auto mx-auto drop-shadow-[0_0_40px_rgba(255,255,255,0.2)]">
+                <div class="space-y-2">
+                    <h1 class="text-3xl font-black tracking-tighter text-white uppercase italic">Aesthetic Intelligence</h1>
+                    <p class="text-white/30 text-xs font-black uppercase tracking-[0.5em]">Defining Your Signature Aura</p>
+                </div>
+            </div>
+
+            <div class="absolute w-[150%] h-[150%] top-[-25%] left-[-25%] bg-gradient-to-br from-dusky-primary/10 via-transparent to-dusky-secondary/10 blur-[100px] pointer-events-none"></div>
+        </div>
+
+        <div class="flex-[1.4] p-8 lg:p-12 flex flex-col justify-center">
+            <div class="mb-8">
+                <div
+                    class="inline-flex items-center gap-2 bg-pink-500/20 border border-pink-400/30 px-3 py-1.5 rounded-full mb-3">
+                    <div class="w-1.5 h-1.5 rounded-full bg-pink-400 animate-pulse"></div>
+                    <span class="text-[8px] uppercase tracking-[0.3em] text-pink-100 font-extrabold">Identity Matrix</span>
+                </div>
+                <h2 class="text-3xl font-black tracking-tighter text-white">Create Your Aura</h2>
+                <p class="text-pink-100/30 font-serif italic text-sm mt-1">Enter your credentials to synchronize.</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="mb-6 bg-red-500/10 border border-red-500/30 backdrop-blur-md px-4 py-3 rounded-2xl">
+                <p class="text-red-400 text-xs font-bold">⚠ {{ message }}</p>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('signup') }}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div class="relative group md:col-span-2">
+                    <input type="text" name="full_name" id="full_name" class="su-input" placeholder=" " required>
+                    <label for="full_name" class="su-label">Full Name</label>
+                </div>
+
+                <div class="relative group md:col-span-2">
+                    <input type="email" name="email" id="email" class="su-input" placeholder=" " required>
+                    <label for="email" class="su-label">Email Address</label>
+                </div>
+
+                <div class="md:col-span-2 space-y-2">
+                    <label class="text-[8px] uppercase tracking-[0.25em] text-white/40 font-black ml-1">Select Vibe</label>
+                    <div class="flex gap-2">
+                        <label class="flex-1 vibe-chip"><input type="radio" name="gender" value="Female" class="hidden peer" checked required>
+                            <div class="vibe-card">Female</div>
+                        </label>
+                        <label class="flex-1 vibe-chip"><input type="radio" name="gender" value="Male" class="hidden peer">
+                            <div class="vibe-card">Male</div>
+                        </label>
+                        <label class="flex-1 vibe-chip"><input type="radio" name="gender" value="Other" class="hidden peer">
+                            <div class="vibe-card">Other</div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="relative group">
+                    <input type="password" name="password" id="password" class="su-input" placeholder=" " required>
+                    <label for="password" class="su-label">Password</label>
+                </div>
+
+                <div class="relative group">
+                    <input type="text" name="username" id="username" class="su-input" placeholder=" " required>
+                    <label for="username" class="su-label">Username</label>
+                </div>
+
+                <div class="md:col-span-2 pt-4">
+                    <button type="submit"
+                        class="w-full py-5 bg-gradient-to-r from-dusky-secondary to-dusky-primary rounded-2xl text-white font-black uppercase tracking-[0.3em] text-[10px] shadow-[0_15px_40px_rgba(112,77,94,0.3)] hover:shadow-[0_25px_60px_rgba(112,77,94,0.5)] transition-all">
+                        Create Blueprint →
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
+                <span class="text-[9px] text-pink-100/30 font-black uppercase tracking-widest">Already In?</span>
+                <a href="{{ url_for('login') }}"
+                    class="px-6 py-2.5 rounded-xl border border-pink-400/20 bg-pink-500/5 text-[9px] font-black uppercase tracking-[0.2em] text-pink-200 hover:bg-pink-500/10 transition-all">
+                    Sign In
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Defensive removal of any Sila elements on auth pages
+    document.addEventListener('DOMContentLoaded', () => {
+        const guide = document.getElementById('sila-guide');
+        if (guide) guide.remove();
+    });
+</script>
+{% endblock %}

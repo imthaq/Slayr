@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Login — Slayr{% endblock %}
+
+{% block content %}
+<style>
+    /* Full-viewport takeover so login feels standalone */
+    main {
+        background: #3d2b36 !important; /* Deep Plum Base */
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 !important;
+        overflow-x: hidden;
+        position: relative;
+    }
+
+    main::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 20% 30%, rgba(154, 116, 140, 0.4) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 70%, rgba(182, 151, 168, 0.3) 0%, transparent 60%);
+        filter: blur(80px);
+        opacity: 0.5;
+        z-index: 0;
+    }
+
+    /* Page-specific overrides */
+    .login-input:focus + .login-label,
+    .login-input:not(:placeholder-shown) + .login-label {
+        top: 25%;
+        font-size: 0.65rem;
+        color: #9a748c;
+        letter-spacing: 0.3em;
+        font-weight: 900;
+    }
+</style>
+
+<div class="aura-bg">
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+</div>
+
+<div class="flex items-center justify-center w-full min-h-screen p-4 sm:p-8 pt-32" style="perspective: 1200px;">
+
+    <div id="loginConsole"
+        class="glass-console w-full max-w-5xl flex flex-col lg:flex-row relative z-10 overflow-hidden"
+        style="background: rgba(0,0,0,0.4); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: 40px; box-shadow: 0 50px 100px rgba(0,0,0,0.5);">
+
+        <div class="flex-1 p-10 lg:p-20 flex flex-col items-center justify-center relative border-b lg:border-b-0 lg:border-r border-white/5"
+            style="background: radial-gradient(circle at 30% 30%, rgba(154,116,140,0.1) 0%, transparent 80%);">
+
+            <div class="text-center space-y-8 relative z-10">
+                <img src="{{ url_for('static', filename='assets/new_logo.png') }}" alt="Slayr" class="h-28 md:h-32 w-auto mx-auto drop-shadow-[0_0_40px_rgba(255,255,255,0.2)]">
+                <div class="space-y-2">
+                    <h1 class="text-3xl font-black tracking-tighter text-white uppercase italic">Aesthetic Intelligence</h1>
+                    <p class="text-white/30 text-xs font-black uppercase tracking-[0.5em]">Synchronizing Your Aura</p>
+                </div>
+            </div>
+
+            <div class="absolute w-[150%] h-[150%] top-[-25%] left-[-25%] bg-gradient-to-br from-dusky-primary/10 via-transparent to-dusky-secondary/10 blur-[100px] pointer-events-none"></div>
+        </div>
+
+        <div class="flex-1 p-8 lg:p-16 flex flex-col justify-center">
+            <div class="mb-10 text-left">
+                <div
+                    class="inline-flex items-center gap-2 bg-pink-500/20 border border-pink-400/30 px-3 py-1.5 rounded-full mb-4">
+                    <div class="w-1.5 h-1.5 rounded-full bg-pink-400 animate-pulse"></div>
+                    <span class="text-[8px] uppercase tracking-[0.3em] text-pink-100 font-extrabold">Portal Active</span>
+                </div>
+                <h2 class="text-4xl font-black tracking-tighter text-white mb-2">Welcome Back</h2>
+                <p class="text-pink-100/40 font-serif italic text-sm">Initiate secure style synchronization.</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="mb-6 bg-red-500/10 border border-red-500/30 backdrop-blur-md px-4 py-3 rounded-2xl">
+                <p class="text-red-400 text-xs font-bold">⚠ {{ message }}</p>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('login') }}" class="space-y-6">
+
+                <div class="relative group">
+                    <input type="text" name="username" id="username" class="login-input" placeholder=" " required
+                        autocomplete="username">
+                    <label for="username" class="login-label">Email or Username</label>
+                </div>
+
+                <div class="relative group">
+                    <input type="password" name="password" id="password" class="login-input" placeholder=" " required
+                        autocomplete="current-password">
+                    <label for="password" class="login-label">Password</label>
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit"
+                        class="w-full py-5 bg-gradient-to-r from-dusky-secondary to-dusky-primary rounded-2xl text-white font-black uppercase tracking-[0.3em] text-[10px] shadow-[0_15px_40px_rgba(112,77,94,0.3)] hover:translate-y-[-2px] hover:shadow-[0_25px_60px_rgba(112,77,94,0.5)] transition-all mb-4">
+                        Sign In →
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-10 pt-8 border-t border-white/5 text-center">
+                <p class="text-[10px] text-pink-100/30 font-black uppercase tracking-widest mb-4">New to Slayr?</p>
+                <a href="{{ url_for('signup') }}"
+                    class="inline-block w-full py-4 rounded-2xl border border-pink-400/20 bg-pink-500/5 text-[10px] font-black uppercase tracking-[0.2em] text-pink-200 hover:bg-pink-500/10 transition-all">
+                    Create Your Aura ✦
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Defensive removal of any Sila elements on auth pages
+    document.addEventListener('DOMContentLoaded', () => {
+        const guide = document.getElementById('sila-guide');
+        if (guide) guide.remove();
+    });
+</script>
+{% endblock %}

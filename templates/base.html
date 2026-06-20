@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slayr | {% block title %}AI Beauty Analysis{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <link rel="manifest" href="{{ url_for('serve_manifest') }}">
+    <meta name="theme-color" content="#9a748c">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'dusky-primary': '#9a748c',
+                        'dusky-secondary': '#704d5e',
+                        'dusky-accent': '#b697a8',
+                        'dusky-dark': '#4a313d',
+                        'dusky-light': '#f2e9ee',
+                        'theme-purple': '#9a748c',
+                        'theme-lavender': '#b697a8',
+                        'theme-deep': '#704d5e',
+                        'orb-1': 'rgba(154, 116, 140, 0.6)',
+                        'orb-2': 'rgba(112, 77, 94, 0.5)',
+                        'orb-3': 'rgba(182, 151, 168, 0.7)',
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['Lato', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.8s ease-out',
+                        'float': 'float 20s infinite ease-in-out',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <script src="{{ url_for('static', filename='js/upload-handler.js') }}"></script>
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-link {
+            padding: 0.5rem 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 800;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            transition: all 0.3s ease;
+            border-radius: 9999px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1.1;
+        }
+
+        .nav-link:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body class="font-sans text-gray-800 antialiased min-h-screen flex flex-col relative overflow-x-hidden">
+    <div class="grain-overlay"></div>
+
+    <div class="aura-bg">
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+        <div class="cloud cloud-3"></div>
+        <div class="cloud cloud-4"></div>
+    </div>
+
+    <div class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 md:px-6 pointer-events-none">
+        <header
+            class="max-w-7xl w-full py-2 px-6 md:px-8 flex justify-between items-center bg-white/5 backdrop-blur-3xl rounded-full border border-white/20 shadow-[0_20px_40px_-20px_rgba(0,0,0,0.5)] transition-all duration-700 hover:scale-[1.01] hover:bg-white/10 pointer-events-auto">
+            <a href="{{ url_for('index') }}"
+                class="flex items-center group transition-transform duration-300 active:scale-95">
+                <img src="{{ url_for('static', filename='assets/new_logo.png') }}" alt="Slayr Logo"
+                    class="h-8 md:h-10 w-auto group-hover:scale-105 transition-transform">
+            </a>
+
+            <button id="mobile-menu-btn"
+                class="lg:hidden flex flex-col justify-center items-center w-8 h-8 space-y-1.5 focus:outline-none z-50">
+                <span class="w-6 h-0.5 bg-white transition-all duration-300"></span>
+                <span class="w-6 h-0.5 bg-white transition-all duration-300"></span>
+                <span class="w-6 h-0.5 bg-white transition-all duration-300"></span>
+            </button>
+
+            <nav class="hidden lg:flex items-center space-x-4">
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+                <a href="{{ url_for('chroma_skin') }}" class="nav-link">Chroma</a>
+                <a href="{{ url_for('smart_match') }}" class="nav-link">Match</a>
+                <a href="{{ url_for('vibe_check') }}" class="nav-link">Vibe</a>
+                <a href="{{ url_for('morpho_face') }}" class="nav-link">Morpho</a>
+                <a href="{{ url_for('frame_fit') }}" class="nav-link">Frame</a>
+                <a href="{{ url_for('grooming_blueprint') }}" class="nav-link">Grooming</a>
+                <a href="{{ url_for('wardrobe') }}" class="nav-link">Wardrobe</a>
+                <a href="{{ url_for('logout') }}"
+                    class="ml-4 text-[10px] font-bold text-red-500 hover:text-red-700 transition-colors uppercase tracking-widest">Logout</a>
+                {% else %}
+                <a href="{{ url_for('chroma_skin') }}" class="nav-link"><span>Chroma</span><span
+                        class="text-[8px] opacity-40 font-black tracking-widest">Guest</span></a>
+                <a href="{{ url_for('morpho_face') }}" class="nav-link"><span>Morpho</span><span
+                        class="text-[8px] opacity-40 font-black tracking-widest">Guest</span></a>
+                <a href="{{ url_for('frame_fit') }}" class="nav-link"><span>Frame</span><span
+                        class="text-[8px] opacity-40 font-black tracking-widest">Guest</span></a>
+                <a href="{{ url_for('smart_match') }}" class="nav-link"><span>Match</span><span
+                        class="text-[8px] opacity-40 font-black tracking-widest">Guest</span></a>
+                <a href="{{ url_for('vibe_check') }}" class="nav-link"><span>Vibe</span><span
+                        class="text-[8px] opacity-40 font-black tracking-widest">Guest</span></a>
+                <a href="{{ url_for('grooming_blueprint') }}" class="nav-link"><span>Grooming</span><span
+                        class="text-[8px] opacity-40 font-black tracking-widest">Guest</span></a>
+                <div class="flex items-center ml-2 gap-4">
+                    <a href="{{ url_for('login') }}" class="nav-link !p-0 !bg-transparent hover:text-white">Login</a>
+                    <a href="{{ url_for('signup') }}"
+                        class="px-6 py-2.5 bg-dusky-primary text-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-dusky-secondary transition-all duration-300 shadow-md whitespace-nowrap">Sign
+                        Up</a>
+                </div>
+                {% endif %}
+            </nav>
+        </header>
+    </div>
+
+    <div id="mobile-menu"
+        class="fixed inset-0 z-40 bg-dusky-dark/95 backdrop-blur-3xl transform translate-x-full transition-transform duration-500 ease-in-out lg:hidden pt-28 px-6 pb-6 overflow-y-auto">
+        <nav class="flex flex-col space-y-4">
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('dashboard') }}"
+                class="mobile-nav-link text-xl font-bold text-white border-b border-white/10 pb-2">Dashboard</a>
+            <a href="{{ url_for('chroma_skin') }}"
+                class="mobile-nav-link text-xl font-bold text-white border-b border-white/10 pb-2">Chroma Skin</a>
+            <a href="{{ url_for('smart_match') }}"
+                class="mobile-nav-link text-xl font-bold text-white border-b border-white/10 pb-2">Smart Match</a>
+            <a href="{{ url_for('vibe_check') }}"
+                class="mobile-nav-link text-xl font-bold text-white border-b border-white/10 pb-2">Vibe Check</a>
+            <a href="{{ url_for('morpho_face') }}"
+                class="mobile-nav-link text-xl font-bold text-white border-b border-white/10 pb-2">Morpho Face</a>
+            <a href="{{ url_for('frame_fit') }}"
+                class="mobile-nav-link text-xl font-bold text-white border-b border-white/10 pb-2">Frame Fit</a>
+            <a href="{{ url_for('grooming_blueprint') }}"
+                class="mobile-nav-link text-xl font-bold text-white border-b border-white/10 pb-2">Grooming</a>
+            <a href="{{ url_for('wardrobe') }}"
+                class="mobile-nav-link text-xl font-bold text-white border-b border-white/10 pb-2">Wardrobe</a>
+            <a href="{{ url_for('logout') }}"
+                class="mt-8 text-center py-3 bg-red-500/20 text-red-400 rounded-full font-bold uppercase tracking-widest text-sm">Logout</a>
+            {% else %}
+            <a href="{{ url_for('chroma_skin') }}" class="text-center py-4 text-xl font-bold text-white">Chroma
+                (Guest)</a>
+            <a href="{{ url_for('morpho_face') }}" class="text-center py-4 text-xl font-bold text-white">Morpho
+                (Guest)</a>
+            <a href="{{ url_for('frame_fit') }}" class="text-center py-4 text-xl font-bold text-white">Frame Fit
+                (Guest)</a>
+            <a href="{{ url_for('smart_match') }}" class="text-center py-4 text-xl font-bold text-white">Smart Match
+                (Guest)</a>
+            <a href="{{ url_for('vibe_check') }}" class="text-center py-4 text-xl font-bold text-white">Vibe Check
+                (Guest)</a>
+            <a href="{{ url_for('grooming_blueprint') }}" class="text-center py-4 text-xl font-bold text-white">Grooming
+                (Guest)</a>
+            <a href="{{ url_for('login') }}" class="text-center py-4 text-xl font-bold text-white">Login</a>
+            <a href="{{ url_for('signup') }}"
+                class="text-center py-4 bg-dusky-primary text-white rounded-full font-bold uppercase tracking-widest text-lg shadow-md">Sign
+                Up</a>
+            {% endif %}
+        </nav>
+    </div>
+
+    <main class="flex-grow flex flex-col items-center pt-24 md:pt-32 p-4 relative w-full overflow-hidden">
+        <div id="dynamic-error-container" class="mb-8 w-full max-w-xl hidden animate-entry">
+            <div
+                class="px-6 py-4 bg-red-500/10 border border-red-500/20 backdrop-blur-xl text-red-400 rounded-3xl text-center shadow-2xl">
+                <div class="flex items-center justify-center gap-3">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <p id="dynamic-error-msg" class="text-[10px] font-black uppercase tracking-[0.2em]"></p>
+                </div>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div id="server-flash-messages" class="mb-8 w-full max-w-xl animate-entry" style="animation-delay: 0.1s">
+            {% for message in messages %}
+            <div
+                class="px-6 py-4 bg-red-500/10 border border-red-500/20 backdrop-blur-xl text-red-400 rounded-3xl text-center shadow-2xl">
+                <div class="flex items-center justify-center gap-3">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <p class="text-[10px] font-black uppercase tracking-[0.2em]">{{ message }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="w-full py-6 text-center text-gray-400 text-xs uppercase tracking-widest z-10">
+        &copy; 2026 Slayr AI. All rights reserved.
+    </footer>
+
+    <div id="sila-guide" class="fixed bottom-0 right-0 z-[100] pointer-events-none flex flex-col items-end">
+        <div id="sila-static-container" class="relative flex flex-col items-end">
+
+            <div id="sila-speech"
+                class="mb-2 md:mb-4 bg-dusky-dark/95 backdrop-blur-xl p-4 md:p-6 rounded-[25px] md:rounded-[35px] shadow-2xl border border-white/10 max-w-[240px] md:max-w-[320px] opacity-0 transform translate-y-4 translate-x-[-10px] md:translate-x-[-30px] transition-all duration-700 pointer-events-auto relative">
+                <div
+                    class="absolute -bottom-2 right-16 md:right-24 w-4 h-4 md:w-5 md:h-5 bg-dusky-dark/95 border-r border-b border-white/10 transform rotate-45">
+                </div>
+
+                <div id="sila-chat-history"
+                    class="max-h-[180px] overflow-y-auto mb-2 custom-scrollbar pr-2 flex flex-col space-y-3">
+                    <p id="sila-message" class="text-white/80 font-serif italic text-xs leading-relaxed text-center">
+                        "Hi! I'm <span class="text-dusky-accent font-bold">Sila</span>. I'm here to guide your aesthetic
+                        journey."
+                    </p>
+                </div>
+            </div>
+
+            <div id="sila-avatar"
+                class="relative w-32 h-32 md:w-48 md:h-48 lg:w-[280px] lg:h-[280px] animate-sila-idle pointer-events-auto cursor-pointer translate-x-4 md:translate-x-[30%]"
+                onclick="toggleSilaSpeech()">
+                <div class="absolute inset-x-0 bottom-4 h-6 bg-black/10 rounded-[100%] blur-xl scale-x-75"></div>
+                <img src="{{ url_for('static', filename='assets/sila_stylist.png') }}"
+                    class="w-full h-full object-contain relative z-10 drop-shadow-2xl transition-transform duration-500 hover:scale-105"
+                    alt="Sila Stylist">
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes sila-idle {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-10px) scale(1.01);
+            }
+        }
+
+        .animate-sila-idle {
+            animation: sila-idle 5s ease-in-out infinite;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(218, 142, 226, 0.2);
+            border-radius: 10px;
+        }
+    </style>
+
+    <script>
+        const silaMessage = document.getElementById('sila-message');
+        const silaSpeech = document.getElementById('sila-speech');
+        const silaHistory = document.getElementById('sila-chat-history');
+
+        function updateSila(text, show = true) {
+            if (!silaMessage) return;
+            if (text) {
+                silaMessage.innerHTML = `"${text}"`;
+                silaHistory.scrollTop = silaHistory.scrollHeight;
+            }
+            if (show) {
+                silaSpeech.classList.remove('opacity-0', 'translate-y-4');
+            }
+        }
+
+        function toggleSilaSpeech() {
+            silaSpeech.classList.toggle('opacity-0');
+            silaSpeech.classList.toggle('translate-y-4');
+        }
+
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const spans = mobileMenuBtn ? mobileMenuBtn.querySelectorAll('span') : [];
+        let isMenuOpen = false;
+
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                isMenuOpen = !isMenuOpen;
+                if (isMenuOpen) {
+                    mobileMenu.classList.remove('translate-x-full');
+
+                    spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+                    spans[1].style.opacity = '0';
+                    spans[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    mobileMenu.classList.add('translate-x-full');
+
+                    spans[0].style.transform = 'none';
+                    spans[1].style.opacity = '1';
+                    spans[2].style.transform = 'none';
+                    document.body.style.overflow = '';
+                }
+            });
+        }
+
+        setTimeout(() => {
+            updateSila();
+        }, 1500);
+
+        const glow = document.querySelector('.mouse-glow');
+        const parallaxElements = document.querySelectorAll('.floating-token, .tilt-card');
+        let mouseX = 0, mouseY = 0;
+        let ticking = false;
+
+        document.addEventListener('mousemove', e => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    // Update Parallax
+                    parallaxElements.forEach(el => {
+                        const speed = 0.015;
+                        const x = (window.innerWidth / 2 - mouseX) * speed;
+                        const y = (window.innerHeight / 2 - mouseY) * speed;
+
+                        if (el.classList.contains('floating-token')) {
+                            el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+                        } else if (el.classList.contains('tilt-card') && !el.matches(':hover')) {
+                            // Only apply general parallax if not currently being "tilted" by local hover
+                            el.style.transform = `translate3d(${x * 0.5}px, ${y * 0.5}px, 0)`;
+                        }
+                    });
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        document.querySelectorAll('.tilt-card').forEach(el => {
+            el.addEventListener('mousemove', e => {
+                const rect = el.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const rotateX = (centerY - e.clientY) * 0.04;
+                const rotateY = (e.clientX - centerX) * 0.04;
+                el.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1)`;
+            });
+
+            el.addEventListener('mouseleave', () => {
+                el.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+            });
+        });
+
+
+        window.showError = function (msg) {
+            const container = document.getElementById('dynamic-error-container');
+            const msgEl = document.getElementById('dynamic-error-msg');
+            if (container && msgEl) {
+                msgEl.innerText = msg;
+                container.classList.remove('hidden');
+                container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            if (typeof updateSila !== 'undefined') {
+                updateSila(`⚠️ <span class='text-red-400'>Analysis Interrupted: ${msg}</span>`);
+            }
+        };
+
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register("{{ url_for('serve_sw') }}")
+                    .then(reg => console.log('Slayr Service Worker registered'))
+                    .catch(err => console.log('Slayr Service Worker registration failed:', err));
+            });
+        }
+
+        (function () {
+            const navEntries = performance.getEntriesByType("navigation");
+            if (navEntries.length > 0 && navEntries[0].type === "reload") {
+                const featurePaths = [
+                    '/chroma-skin',
+                    '/smart-match',
+                    '/vibe-check',
+                    '/morpho-face',
+                    '/frame-fit',
+                    '/grooming-blueprint'
+                ];
+                const currentPath = window.location.pathname;
+                if (featurePaths.some(path => currentPath.includes(path))) {
+                    window.location.replace(window.location.origin + currentPath);
+                }
+            }
+        })();
+    </script>
+</body>
+
+</html>

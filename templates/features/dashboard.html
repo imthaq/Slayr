@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Slayr Suite{% endblock %}
+
+{% block content %}
+<style>
+    /* Prevent Sila guide duplication if already present in base but ensure it's hidden if needed */
+    #sila-guide {
+        display: block !important; /* Re-enable for dashboard */
+    }
+
+    .dashboard-bg {
+        background: transparent;
+        min-height: 100vh;
+        width: 100%;
+        position: relative;
+    }
+
+    .glass-console {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 50px;
+        padding: 40px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .glass-console::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top right, rgba(255, 176, 216, 0.05) 0%, transparent 60%);
+        pointer-events: none;
+    }
+
+    .user-badge {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .user-badge:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .feature-grid-rituals {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+    }
+
+    .ritual-box {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 40px;
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: flex-start;
+        min-height: 250px;
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        position: relative;
+        overflow: hidden;
+        background-size: cover;
+        background-position: center;
+        text-decoration: none;
+    }
+
+    .ritual-box > * {
+        position: relative;
+        z-index: 2;
+        text-align: left;
+    }
+
+    .ritual-box h3 {
+        text-shadow: 0px 4px 25px rgba(0, 0, 0, 1), 0px 2px 10px rgba(0, 0, 0, 0.8);
+    }
+
+    .ritual-box:hover {
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .status-verified { background: #ffb0d8; box-shadow: 0 0 10px #ffb0d8; }
+    .status-pending { background: rgba(255, 255, 255, 0.2); }
+
+    .launch-btn {
+        margin-top: auto;
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .ritual-box:hover .launch-btn {
+        border-bottom-color: #ffb0d8;
+        color: #ffb0d8;
+        padding-left: 5px;
+    }
+
+    .sila-profile-orb {
+        position: relative;
+        width: 140px;
+        height: 140px;
+    }
+
+    .sila-profile-orb::before {
+        content: '';
+        position: absolute;
+        inset: -10px;
+        border: 1px solid rgba(255, 176, 216, 0.2);
+        border-radius: 50%;
+        animation: spin 30s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+<div class="dashboard-bg pb-24 px-6">
+    <div class="max-w-6xl mx-auto space-y-16">
+
+        <header class="glass-console flex flex-col md:flex-row items-center gap-12">
+            <div class="sila-profile-orb">
+                <img src="{{ url_for('static', filename='assets/sila_stylist.png') }}" alt="Sila" class="w-full h-full object-contain relative z-10 filter drop-shadow-[0_0_30px_rgba(255,176,216,0.2)]">
+            </div>
+
+            <div class="flex-1 text-center md:text-left space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center gap-3">
+                    <h1 class="text-4xl font-black text-white tracking-tighter">
+                        Welcome back, <span class="text-[#ffb0d8]">{{ user.full_name or user.username }}</span>
+                    </h1>
+                    <div class="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1 rounded-full self-center md:self-auto">
+                        <div class="status-dot status-verified"></div>
+                        <span class="text-[8px] font-black uppercase tracking-widest text-[#ffb0d8]">Neural Link Active</span>
+                    </div>
+                </div>
+                <p class="text-white/40 font-playfair italic text-lg">Your aesthetic blueprint is synchronized and ready for further evolution.</p>
+
+                <div class="flex flex-wrap gap-4 pt-4 justify-center md:justify-start">
+                    <div class="user-badge">
+                        <span class="text-[8px] font-black uppercase tracking-widest text-white/30">Face</span>
+                        <span class="text-xs font-black text-white">{{ user.face_shape or 'Pending' }}</span>
+                    </div>
+                    <div class="user-badge">
+                        <span class="text-[8px] font-black uppercase tracking-widest text-white/30">Aura</span>
+                        <div class="status-dot" style="background-color: {{ user.skin_hex or 'rgba(255,255,255,0.1)' }};"></div>
+                        <span class="text-xs font-black text-white">{{ user.skin_hex or 'Unmapped' }}</span>
+                    </div>
+                    <div class="user-badge">
+                        <span class="text-[8px] font-black uppercase tracking-widest text-white/30">Season</span>
+                        <span class="text-xs font-black text-white">{{ user.season or 'Not Set' }}</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section class="space-y-12">
+            <div class="flex items-center gap-6">
+                <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 whitespace-nowrap">Core Rituals</h2>
+                <div class="h-px w-full bg-white/5"></div>
+            </div>
+
+            <div class="feature-grid-rituals">
+
+                <a href="{{ url_for('smart_match') }}" class="ritual-box" style="background-image: url('{{ url_for('static', filename='assets/smart_match_cover_1773155320426.png') }}');">
+                    <div>
+                        <h3 class="text-2xl font-black text-white uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Smart Match</h3>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('chroma_skin') }}" class="ritual-box" style="background-image: url('{{ url_for('static', filename='assets/chroma_skin_cover_1773155442636.png') }}');">
+                    <div>
+                        <h3 class="text-2xl font-black text-white uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Chroma Skin</h3>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('morpho_face') }}" class="ritual-box" style="background-image: url('{{ url_for('static', filename='assets/morpho_face_cover_1773155851168.png') }}');">
+                    <div>
+                        <h3 class="text-2xl font-black text-white uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Morpho Face</h3>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('vibe_check') }}" class="ritual-box" style="background-image: url('{{ url_for('static', filename='assets/vibe_check_cover_1773155875984.png') }}');">
+                    <div>
+                        <h3 class="text-2xl font-black text-white uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Vibe Check</h3>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('wardrobe') }}" class="ritual-box" style="background-image: url('{{ url_for('static', filename='assets/capsule_wardrobe_cover_1773156023179.png') }}');">
+                    <div>
+                        <h3 class="text-2xl font-black text-white uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Wardrobe AI</h3>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('frame_fit') }}" class="ritual-box" style="background-image: url('{{ url_for('static', filename='assets/frame_fit_cover_1773156005207.png') }}');">
+                    <div>
+                        <h3 class="text-2xl font-black text-white uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Frame Fit</h3>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('grooming_blueprint') }}" class="ritual-box" style="background-image: url('{{ url_for('static', filename='assets/grooming_cover.png') }}');">
+                    <div>
+                        <h3 class="text-2xl font-black text-white uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Grooming</h3>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <footer class="text-center pt-8 border-top border-white/5">
+            <p class="text-[8px] font-black uppercase tracking-[0.4em] text-white/10">Slayr Control Center • v4.0.1 • Soft-Pop Aura Edition</p>
+        </footer>
+    </div>
+</div>
+
+<script>
+    // Reveal interaction
+    document.addEventListener('DOMContentLoaded', () => {
+        const boxes = document.querySelectorAll('.ritual-box');
+        boxes.forEach((box, i) => {
+            box.style.opacity = '0';
+            box.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                box.style.transition = 'all 0.8s cubic-bezier(0.23, 1, 0.32, 1)';
+                box.style.opacity = '1';
+                box.style.transform = 'translateY(0)';
+            }, i * 100);
+        });
+    });
+</script>
+{% endblock %}

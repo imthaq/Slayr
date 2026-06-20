@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.egg-info/
+
+# Virtual environments
+.env
+.venv
+venv/
+env/
+
+# Flask / SQLite
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# User uploads (never commit)
+static/uploads/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Internal review docs
+slayr_review.md
+slayr_review2.md
+
+# Matplotlib cache
+.matplotlib/

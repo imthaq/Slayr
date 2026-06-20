@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+
+{% block title %}Vibe Check — Slayr Suite{% endblock %}
+
+{% block content %}
+
+<style>
+    .vibe-bg {
+        background: transparent;
+        min-height: 100vh;
+        width: 100%;
+        position: relative;
+    }
+
+    .glass-card-premium {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 40px;
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .vibe-portal {
+        aspect-ratio: 3/4;
+        border-radius: 40px;
+        border: 2px dashed rgba(255, 176, 216, 0.2);
+        background: rgba(255, 255, 255, 0.02);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .vibe-portal:hover {
+        background: rgba(255, 176, 216, 0.05);
+        border-color: rgba(255, 176, 216, 0.5);
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 0 60px rgba(255, 176, 216, 0.05);
+    }
+
+    .swatch-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        transition: transform 0.3s ease;
+    }
+
+    .swatch-item:hover {
+        transform: translateY(-5px);
+    }
+
+    .swatch-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .analysis-pill {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 12px 20px;
+        text-align: center;
+    }
+
+    .btn-action {
+        background: linear-gradient(135deg, #ffb0d8, #d48bb7);
+        color: #2d1f26;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        padding: 18px 0;
+        border-radius: 100px;
+        transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        box-shadow: 0 10px 30px rgba(255, 176, 216, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .btn-action:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(255, 176, 216, 0.4);
+        border-color: white;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-entry {
+        animation: fadeIn 1s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    }
+
+    .scroll-container {
+        max-height: 600px;
+        overflow-y: auto;
+        padding-right: 10px;
+    }
+
+    .scroll-container::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .scroll-container::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .scroll-container::-webkit-scrollbar-thumb {
+        background: #ffb0d8;
+        border-radius: 10px;
+    }
+
+    .studio-mapping-box {
+        aspect-ratio: 3/4;
+        border-radius: 30px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.02);
+        position: relative;
+    }
+</style>
+
+<div class="vibe-bg pb-24 px-6">
+    <div class="max-w-6xl mx-auto space-y-16">
+
+        <header class="text-center space-y-4 animate-entry">
+            <div class="flex items-center justify-center gap-3">
+                <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-[#ffb0d8]">Aura Ritual</h2>
+                <div class="h-2 w-2 rounded-full bg-[#ffb0d8] animate-pulse"></div>
+            </div>
+            <h1 class="text-5xl md:text-6xl font-black text-white tracking-tighter">Vibe <span
+                    class="text-transparent bg-clip-text bg-gradient-to-r from-[#ffb0d8] to-white/40">Check</span></h1>
+            <p class="text-white/40 font-playfair italic text-lg md:text-xl max-w-xl mx-auto">Calibrate your seasonal
+                resonance and synthesize your harmonic palette.</p>
+        </header>
+
+        <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
+
+            <div class="lg:col-span-1 space-y-10 animate-entry" style="animation-delay: 0.1s">
+                <div id="drop-zone" class="vibe-portal group w-full"
+                    data-uploaded-image="{{ url_for('static', filename='uploads/' + uploaded_image) if uploaded_image else '' }}">
+
+                    <div id="portal-art"
+                        class="absolute inset-0 flex flex-col items-center justify-center p-12 text-center space-y-6 z-10 transition-opacity"
+                        {% if uploaded_image %}style="opacity: 0;" {% endif %}>
+                        <div
+                            class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center text-[#ffb0d8] group-hover:scale-110 transition-transform">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                            </svg>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-[10px] font-black uppercase tracking-widest text-[#ffb0d8]">Vibe Input</p>
+                            <p class="text-[8px] text-white/20 leading-relaxed uppercase tracking-wider">Initialize
+                                Color Theory Analysis</p>
+                        </div>
+                    </div>
+
+                    <img id="vibe-preview"
+                        src="{{ url_for('static', filename='uploads/' + uploaded_image) if uploaded_image else '' }}"
+                        class="{% if not uploaded_image %}hidden{% endif %} absolute inset-0 w-full h-full object-cover z-0" />
+                    <div id="scan-laser" class="scan-line" style="opacity: 0;"></div>
+                    <input type="file" name="image" id="file-input" class="hidden" accept="image/*" {% if not season
+                        %}required{% endif %}>
+                </div>
+
+                {% if season %}
+                <div class="flex flex-wrap gap-4">
+                    <div class="analysis-pill flex-1">
+                        <p class="text-[7px] font-black uppercase tracking-widest text-white/30 mb-1">Season</p>
+                        <p class="text-xs font-black text-white uppercase">{{ season }}</p>
+                    </div>
+                    {% if mst_label %}
+                    <div class="analysis-pill flex-1">
+                        <p class="text-[7px] font-black uppercase tracking-widest text-white/30 mb-1">Tone Scale</p>
+                        <p class="text-xs font-black text-white uppercase">{{ mst_label }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <button type="submit" class="w-full btn-action">Analyze Aura</button>
+            </div>
+
+            <div class="lg:col-span-2 space-y-12 animate-entry" style="animation-delay: 0.2s">
+                {% if fashion_palette %}
+                <div class="glass-card-premium flex-grow p-10 space-y-10">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-[10px] font-black uppercase tracking-[0.4em] text-[#ffb0d8]">Synthesis Matrix
+                        </h3>
+                        <div class="status-badge">Aura Locked</div>
+                    </div>
+
+                    <div class="space-y-10">
+                        <div class="flex flex-wrap gap-6 justify-center">
+                            <div class="analysis-pill px-10">
+                                <p class="text-[7px] font-black uppercase tracking-widest text-white/30 mb-1">Dermal
+                                    Frequency</p>
+                                <p class="text-xs font-black text-white uppercase">{{ skin_tone }}</p>
+                            </div>
+                            <div class="analysis-pill px-10">
+                                <p class="text-[7px] font-black uppercase tracking-widest text-white/30 mb-1">Base
+                                    Resonance</p>
+                                <p class="text-xs font-black text-white uppercase">{{ undertone_base }}</p>
+                            </div>
+                            <div class="analysis-pill px-10">
+                                <p class="text-[7px] font-black uppercase tracking-widest text-white/30 mb-1">Contrast
+                                    Level</p>
+                                <p class="text-xs font-black text-white uppercase">{{ contrast }}</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white/5 border border-white/5 p-8 rounded-[35px] text-center">
+                            <p class="text-[#ffb0d8]/60 font-playfair italic text-xl leading-relaxed max-w-2xl mx-auto">
+                                "{{ fashion_palette.why }}"
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="scroll-container space-y-10">
+
+                        <div class="space-y-6">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8]">Recommended
+                                Spectrum</p>
+                            <div class="flex flex-wrap gap-6">
+                                {% for color in fashion_palette.recommended %}
+                                <div class="swatch-item">
+                                    <div class="swatch-circle" style="background-color: {{ color.hex }};"></div>
+                                    <span class="text-[8px] font-black uppercase tracking-widest text-white/40">{{
+                                        color.name }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-white/30">Harmonic Accents
+                            </p>
+                            <div class="flex flex-wrap gap-6">
+                                {% for color in fashion_palette.accents %}
+                                <div class="swatch-item">
+                                    <div class="swatch-circle" style="background-color: {{ color.hex }};"></div>
+                                    <span class="text-[8px] font-black uppercase tracking-widest text-white/40">{{
+                                        color.name }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-red-400/40">Dissonant Tones
+                            </p>
+                            <div class="flex flex-wrap gap-6">
+                                {% for color in fashion_palette.avoid %}
+                                <div class="swatch-item grayscale opacity-50">
+                                    <div class="swatch-circle"
+                                        style="background: {{ color.hex }}; border-color: rgba(239, 68, 68, 0.4);">
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <div class="w-full h-0.5 bg-red-400/50 rotate-45"></div>
+                                        </div>
+                                    </div>
+                                    <span class="text-[8px] font-black uppercase tracking-widest text-white/20">{{
+                                        color.name }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center pt-8 border-t border-white/5">
+                        <a href="{{ url_for('dashboard') }}"
+                            class="text-[9px] font-black uppercase tracking-widest text-white/20 hover:text-[#ffb0d8] transition-colors">Return
+                            to Studio &rarr;</a>
+                    </div>
+                </div>
+                {% elif error %}
+                <div
+                    class="glass-card-premium p-12 h-full flex flex-col items-center justify-center text-center space-y-8 min-h-[500px]">
+                    <div
+                        class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-red-400 mx-auto">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-xl font-playfair italic text-white/60">Calibration Interrupted</p>
+                        <p class="text-[8px] font-black uppercase tracking-[0.3em] text-red-400/60">{{ error }}</p>
+                    </div>
+                    <button onclick="location.reload()"
+                        class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8] hover:underline">Retry
+                        Initialization</button>
+                </div>
+                {% else %}
+                <div
+                    class="glass-card-premium flex-grow p-12 flex flex-col items-center justify-center text-center space-y-6 min-h-[500px] border-dashed border-2">
+                    <div class="relative w-24 h-24 mb-4">
+                        <div class="absolute inset-0 border-2 border-white/5 rounded-full animate-ping opacity-20">
+                        </div>
+                        <div class="absolute inset-2 border-2 border-[#ffb0d8]/20 rounded-full animate-spin"
+                            style="animation-duration: 3s;"></div>
+                        <div class="absolute inset-0 flex items-center justify-center text-white/10">
+                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="space-y-2 relative z-10 text-center">
+                        <p class="text-2xl font-playfair italic text-white/40">Awaiting Spectral Signal...</p>
+                        <p class="text-[9px] font-black uppercase tracking-[0.4em] text-[#ffb0d8]/50">Neural Analysis
+                            Module Offline</p>
+                    </div>
+                    <div
+                        class="absolute inset-0 bg-gradient-to-b from-transparent to-white/5 pointer-events-none rounded-[40px]">
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Initialize upload handler
+    const vibeUpload = new UploadPortal({
+        zoneId: 'drop-zone',
+        inputId: 'file-input',
+        previewId: 'vibe-preview',
+        artElementId: 'portal-art',
+        laserElementId: 'scan-laser',
+        isMain: true,
+        onFileSelected: () => updateSila("Aura sample captured. Ready for seasonal calibration.")
+    });
+
+    const initialImage = dropZone.dataset.uploadedImage;
+    if (initialImage) {
+        preview.src = initialImage;
+        preview.classList.remove('hidden');
+        portalArt.style.opacity = '0';
+    }
+
+    {% if fashion_palette %}
+    setTimeout(() => {
+        updateSila("Aura calibration complete. You resonate with the <span class='text-[#ffb0d8] font-black'>{{ season }}</span> spectrum.");
+    }, 1000);
+    {% endif %}
+
+    {% if error %}
+    setTimeout(() => {
+        updateSila("⚠️ <span class='text-red-400'>Calibration Failed: {{ error }}</span>");
+    }, 500);
+    {% endif %}
+</script>
+
+{% endblock %}

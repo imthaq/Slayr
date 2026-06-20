@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Slayr | Your AI Aesthetic Ritual{% endblock %}
+
+{% block content %}
+<style>
+    main {
+        padding: 0 !important;
+        overflow-x: hidden;
+    }
+
+    #sila-guide { display: none !important; }
+
+    .bubble-card {
+        background: var(--dusky-light);
+        background-image: 
+            radial-gradient(circle at 10% 20%, rgba(255, 154, 158, 0.3) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(182, 151, 168, 0.4) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(242, 233, 238, 0.2) 0%, transparent 70%);
+        backdrop-filter: blur(30px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 60px;
+        box-shadow: 
+            0 25px 50px -12px rgba(0, 0, 0, 0.3),
+            inset 0 4px 10px rgba(255, 255, 255, 0.8),
+            inset 0 -4px 10px rgba(154, 116, 140, 0.1);
+        transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .bubble-card::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at center, rgba(255,255,255,0.8) 0%, transparent 50%);
+        opacity: 0;
+        transition: opacity 0.6s;
+        pointer-events: none;
+    }
+
+    .bubble-card:hover::after {
+        opacity: 0.3;
+    }
+
+    .bubble-card:hover {
+        transform: translateY(-15px) scale(1.03);
+        background: rgba(255, 240, 245, 0.4);
+        background-image: 
+            radial-gradient(circle at 10% 20%, rgba(255, 154, 158, 0.6) 0%, transparent 60%),
+            radial-gradient(circle at 90% 80%, rgba(182, 151, 168, 0.7) 0%, transparent 70%);
+        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
+        border-color: rgba(255, 255, 255, 0.8);
+    }
+
+    .btn-squish {
+        background: var(--dusky-primary);
+        color: white;
+        padding: 20px 45px;
+        border-radius: 100px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.3em;
+        font-size: 10px;
+        box-shadow: 0 12px 0 var(--dusky-secondary), 0 20px 40px rgba(112, 77, 94, 0.2);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 2px solid rgba(255,255,255,0.2);
+    }
+
+    .btn-squish:active {
+        transform: translateY(6px);
+        box-shadow: 0 4px 0 #704d5e;
+    }
+
+    .btn-squish:hover {
+        background: var(--dusky-secondary);
+        transform: translateY(-2px);
+    }
+
+    .rainbow-glow {
+        position: relative;
+    }
+
+    .rainbow-glow::before {
+        content: '';
+        position: absolute;
+        inset: -5px;
+        background: var(--rainbow-gradient);
+        filter: blur(20px);
+        z-index: -1;
+        opacity: 0.3;
+        border-radius: inherit;
+    }
+
+    .aura-portal {
+        width: 100%;
+        max-width: 520px;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, rgba(255,255,255,1) 0%, rgba(255,255,255,0.4) 100%);
+        border: 8px solid white;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 
+            0 0 0 1px rgba(154, 116, 140, 0.1),
+            0 50px 100px -20px rgba(112, 77, 94, 0.15),
+            inset 0 0 60px rgba(154, 116, 140, 0.05);
+        animation: portalGlow 8s ease-in-out infinite;
+    }
+
+    @keyframes portalGlow {
+        0%, 100% { transform: scale(1); box-shadow: 0 50px 100px -20px rgba(112, 77, 94, 0.15); }
+        50% { transform: scale(1.02); box-shadow: 0 70px 120px -20px rgba(154, 116, 140, 0.25); }
+    }
+
+    .floating {
+        animation: bubbleFloat 6s ease-in-out infinite;
+    }
+
+    @keyframes bubbleFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+    }
+
+</style>
+
+<div class="relative z-10">
+
+    <section class="min-h-screen flex flex-col items-center justify-center p-6 text-center space-y-12">
+        <div class="space-y-6 max-w-3xl">
+            <div class="h-24 md:h-32 w-auto mx-auto"></div>
+
+            <h1 class="text-5xl md:text-7xl font-black tracking-tighter text-white">
+                Refine Your <span class="text-transparent bg-clip-text" style="background-image: var(--rainbow-gradient)">Essence.</span>
+            </h1>
+
+            <p class="text-lg md:text-xl text-white/60 font-medium max-w-xl mx-auto leading-relaxed">
+                Step into the portal and synchronize your natural beauty with our neural aesthetic engine.
+            </p>
+        </div>
+
+        <div class="relative flex items-center justify-center py-10 w-full overflow-visible">
+            <div class="aura-portal shadow-[0_0_150px_rgba(0,0,0,0.4)]" style="background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.2) 100%); border-color: rgba(255,255,255,0.2);">
+
+                <div class="absolute inset-0 flex items-center justify-center z-10">
+                    <div class="floating w-[75%] h-[75%] flex items-center justify-center">
+                        <img src="{{ url_for('static', filename='assets/sila_stylist.png') }}" 
+                             class="w-full h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.2)] transform translate-y-2" 
+                             alt="Sila">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap justify-center gap-6 pb-20">
+            <a href="{{ url_for('signup') }}" class="btn-squish rainbow-glow">Get Analyzed</a>
+            <a href="#suite" class="px-10 py-5 rounded-full border-2 border-white/20 text-[10px] font-black uppercase tracking-[0.3em] text-white/80 hover:bg-white/10 hover:border-white transition-all">Inside the Suite</a>
+        </div>
+    </section>
+
+    <section id="suite" class="py-32 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-20 space-y-4">
+                <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-dusky-accent">The Ritual</h2>
+                <h3 class="text-4xl md:text-5xl font-black text-white/90">Discover Your Blueprint.</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+
+                <a href="{{ url_for('chroma_skin') }}" class="bubble-card p-12 text-center space-y-6 group">
+                    <div class="w-20 h-20 bg-gradient-to-br from-white/20 to-white/5 rounded-full mx-auto flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-inner">🎨</div>
+                    <div class="space-y-2">
+                        <h4 class="text-xl font-bold text-white uppercase tracking-tighter">Chroma Skin</h4>
+                        <p class="text-sm text-white/60 leading-relaxed font-medium">Decode your complexion's unique spectral identity.</p>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('morpho_face') }}" class="bubble-card p-12 text-center space-y-6 group">
+                    <div class="w-20 h-20 bg-gradient-to-br from-white/20 to-white/5 rounded-full mx-auto flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-inner">🧬</div>
+                    <div class="space-y-2">
+                        <h4 class="text-xl font-bold text-white uppercase tracking-tighter">Morpho Face</h4>
+                        <p class="text-sm text-white/60 leading-relaxed font-medium">Map the architecture of your facial features.</p>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('vibe_check') }}" class="bubble-card p-12 text-center space-y-6 group">
+                    <div class="w-20 h-20 bg-gradient-to-br from-white/20 to-white/5 rounded-full mx-auto flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-inner">✨</div>
+                    <div class="space-y-2">
+                        <h4 class="text-xl font-bold text-white uppercase tracking-tighter">Vibe Check</h4>
+                        <p class="text-sm text-white/60 leading-relaxed font-medium">Align your style with your atmospheric resonance.</p>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('smart_match') }}" class="bubble-card p-12 text-center space-y-6 group">
+                    <div class="w-20 h-20 bg-gradient-to-br from-white/20 to-white/5 rounded-full mx-auto flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-inner">💎</div>
+                    <div class="space-y-2">
+                        <h4 class="text-xl font-bold text-white uppercase tracking-tighter">Smart Match</h4>
+                        <p class="text-sm text-white/60 leading-relaxed font-medium">Synthesize the perfect foundation match instantly.</p>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('wardrobe') }}" class="bubble-card p-12 text-center space-y-6 group">
+                    <div class="w-20 h-20 bg-gradient-to-br from-white/20 to-white/5 rounded-full mx-auto flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-inner">👗</div>
+                    <div class="space-y-2">
+                        <h4 class="text-xl font-bold text-white uppercase tracking-tighter">Wardrobe AI</h4>
+                        <p class="text-sm text-white/60 leading-relaxed font-medium">Curate a wardrobe that reflects your true aura.</p>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('frame_fit') }}" class="bubble-card p-12 text-center space-y-6 group">
+                    <div class="w-20 h-20 bg-gradient-to-br from-white/20 to-white/5 rounded-full mx-auto flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-inner">👓</div>
+                    <div class="space-y-2">
+                        <h4 class="text-xl font-bold text-white uppercase tracking-tighter">Frame Fit</h4>
+                        <p class="text-sm text-white/60 leading-relaxed font-medium">Architectural eyewear synthesis.</p>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('grooming_blueprint') }}" class="bubble-card p-12 text-center space-y-6 group">
+                    <div class="w-20 h-20 bg-gradient-to-br from-white/20 to-white/5 rounded-full mx-auto flex items-center justify-center text-4xl group-hover:scale-110 transition-transform shadow-inner">🪒</div>
+                    <div class="space-y-2">
+                        <h4 class="text-xl font-bold text-white uppercase tracking-tighter">Grooming</h4>
+                        <p class="text-sm text-white/60 leading-relaxed font-medium">Neural follicle alignment.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-40 text-center space-y-12">
+        <div class="space-y-6">
+            <img src="{{ url_for('static', filename='assets/new_logo.png') }}" alt="Slayr" class="h-10 w-auto mx-auto opacity-30">
+            <p class="text-[9px] font-black uppercase tracking-[1em] text-white/20">&copy; 2026 Slayr AI &bull; Aesthetic Intelligence Studio</p>
+        </div>
+    </footer>
+</div>
+<script>
+
+    document.addEventListener('mousemove', (e) => {
+        const portal = document.querySelector('.aura-portal');
+        if (!portal) return;
+
+        const rect = portal.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const moveX = (e.clientX - centerX) / 40;
+        const moveY = (e.clientY - centerY) / 40;
+
+
+        const sila = portal.querySelector('.floating img');
+        if (sila) {
+            sila.style.transform = `translate(${moveX}px, ${moveY + 8}px) scale(1.05)`;
+            sila.style.transition = 'transform 0.1s ease-out';
+        }
+
+
+        const bubbles = portal.querySelectorAll('.bubble-card');
+        bubbles.forEach((b, i) => {
+            const factor = (i + 1) * 0.15;
+            b.style.transform = `translate(${-moveX * factor}px, ${-moveY * factor}px)`;
+            b.style.transition = 'transform 0.1s ease-out';
+        });
+    });
+</script>
+{% endblock %}

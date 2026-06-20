@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Grooming Blueprint — Slayr Suite{% endblock %}
+
+{% block content %}
+
+<style>
+    .grooming-bg {
+        background: transparent;
+        min-height: 100vh;
+        width: 100%;
+        position: relative;
+    }
+
+    .glass-card-premium {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 40px;
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .follicle-portal {
+        aspect-ratio: 1/1;
+        border-radius: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.02);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.5s ease;
+    }
+
+    .follicle-portal:hover {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 176, 216, 0.2);
+    }
+
+    .btn-action {
+        background: #ffb0d8;
+        color: #2d1f26;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        padding: 18px 0;
+        border-radius: 100px;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(255, 176, 216, 0.2);
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 40px rgba(255, 176, 216, 0.4);
+    }
+
+    .result-viz {
+        border-radius: 30px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-entry {
+        animation: fadeIn 1s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    }
+</style>
+
+<div class="grooming-bg pb-24 px-6">
+    <div class="max-w-6xl mx-auto space-y-16">
+
+        <header class="text-center space-y-4 animate-entry">
+            <div class="flex items-center justify-center gap-3">
+                <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-[#ffb0d8]">Styling Ritual</h2>
+                <div class="h-2 w-2 rounded-full bg-[#ffb0d8] animate-pulse"></div>
+            </div>
+            <h1 class="text-6xl font-black text-white tracking-tighter">Grooming <span class="text-white/20">Blueprint</span></h1>
+            <p class="text-white/40 font-playfair italic text-xl max-w-xl mx-auto">Follicle synthesis. Map your facial architecture for optimal grooming orientation.</p>
+        </header>
+
+        <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16 items-start">
+
+            <div class="lg:col-span-1 space-y-10 animate-entry" style="animation-delay: 0.1s">
+                <div id="drop-zone" class="follicle-portal group">
+                    <div id="portal-art" class="absolute inset-0 flex flex-col items-center justify-center p-12 text-center space-y-6 z-10 transition-opacity" {% if processed_image %}style="opacity: 0;"{% endif %}>
+                        <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center text-[#ffb0d8] group-hover:scale-110 transition-transform">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7 7m-7-7l-2.879 2.879M12 12L9.121 9.121m0 5.758L6.243 12m0 0l2.878-2.879M6.243 12L3.365 14.879m0-5.758L6.243 12m0 0L9.121 9.121" /></svg>
+                        </div>
+                        <p class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8]">Initialization</p>
+                    </div>
+                    <img id="input-preview" class="{% if not processed_image %}hidden{% endif %} absolute inset-0 w-full h-full object-cover z-0" {% if processed_image %}src="{{ url_for('static', filename='uploads/' + processed_image) }}"{% endif %} />
+                    <div id="scan-laser" class="scan-line" style="opacity: 0;"></div>
+                    <input type="file" name="image" id="file-input" class="hidden" accept="image/*">
+                    <input type="hidden" name="existing_image" value="{{ processed_image }}">
+                </div>
+
+                <div class="glass-card-premium p-6 space-y-4">
+                    <p class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8] text-center">Identity Calibration</p>
+                    <div class="flex gap-8 justify-center">
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input type="radio" name="gender" value="male" {% if gender == 'male' or not gender %}checked{% endif %} class="hidden peer">
+                            <div class="w-4 h-4 rounded-full border-2 border-white/20 peer-checked:border-[#ffb0d8] peer-checked:bg-[#ffb0d8] transition-all"></div>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-white/40 group-hover:text-white transition-colors">Male</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input type="radio" name="gender" value="female" {% if gender == 'female' %}checked{% endif %} class="hidden peer">
+                            <div class="w-4 h-4 rounded-full border-2 border-white/20 peer-checked:border-[#ffb0d8] peer-checked:bg-[#ffb0d8] transition-all"></div>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-white/40 group-hover:text-white transition-colors">Female</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full btn-action">Synthesize Blueprint</button>
+            </div>
+
+            <div class="lg:col-span-2 space-y-10 animate-entry" style="animation-delay: 0.2s">
+                {% if processed_image %}
+                <div class="glass-card-premium p-10 space-y-10">
+                    <header class="space-y-2 text-center">
+                        <h3 class="text-[10px] font-black uppercase tracking-[0.4em] text-[#ffb0d8]">Aesthetic Synthesis</h3>
+                        <div class="flex justify-center">
+                            <div class="px-4 py-1 rounded-full border border-[#ffb0d8]/30 bg-[#ffb0d8]/5">
+                                <p class="text-[8px] font-black uppercase tracking-widest text-[#ffb0d8]">{{ face_shape }} Profile Locked</p>
+                            </div>
+                        </div>
+                    </header>
+
+                    <div class="space-y-12">
+                        {% if recommendations %}
+
+                        <div class="glass-card-premium p-8 md:p-12 space-y-8 border-white/10 bg-white/[0.02]">
+                            <div class="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-white/5 pb-8">
+                                <div class="space-y-2 text-center md:text-left">
+                                    <p class="text-[9px] font-black uppercase tracking-[0.4em] text-[#ffb0d8]">Primary Architecture</p>
+                                    <h4 class="text-3xl font-black text-white tracking-tight">Hairstyle Synthesis</h4>
+                                </div>
+                                <p class="text-xs text-white/40 max-w-xs text-center md:text-right leading-relaxed">{{ recommendations.desc }}</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {% set hair_list = recommendations.hair_male if gender == 'male' else recommendations.hair_female %}
+                                {% for style in hair_list %}
+                                <div class="bg-white/5 border border-white/5 p-4 rounded-3xl flex items-center gap-4 group hover:bg-white/10 hover:border-[#ffb0d8]/30 transition-all cursor-pointer">
+                                    <div class="w-16 h-16 rounded-2xl bg-white/5 overflow-hidden shrink-0 border border-white/10">
+                                        {% set folder = 'man_hair' if gender == 'male' else 'women_hair' %}
+                                        <img src="{{ url_for('static', filename='assets/grooming/' ~ folder ~ '/' ~ style ~ '.jpg') }}" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <p class="text-[8px] font-black uppercase tracking-widest text-[#ffb0d8]/50">Style Option {{ loop.index }}</p>
+                                        <p class="text-base font-bold text-white group-hover:text-[#ffb0d8] transition-colors">{{ style }}</p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% if gender == 'male' and recommendations.beard %}
+                        <div class="glass-card-premium p-8 md:p-12 space-y-8 border-white/10 bg-white/[0.02]">
+                            <div class="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-white/5 pb-8">
+                                <div class="space-y-2 text-center md:text-left">
+                                    <p class="text-[9px] font-black uppercase tracking-[0.4em] text-[#ffb0d8]">Follicle Alignment</p>
+                                    <h4 class="text-3xl font-black text-white tracking-tight">Beard Sculpting</h4>
+                                </div>
+                                <p class="text-xs text-white/40 max-w-xs text-center md:text-right leading-relaxed">Structural facial hair optimization for the {{ face_shape }} geometry.</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {% for beard in recommendations.beard %}
+                                <div class="bg-white/5 border border-white/5 p-4 rounded-3xl flex items-center gap-4 group hover:bg-white/10 hover:border-[#ffb0d8]/30 transition-all cursor-pointer">
+                                    <div class="w-16 h-16 rounded-2xl bg-white/5 overflow-hidden shrink-0 border border-white/10">
+                                        <img src="{{ url_for('static', filename='assets/grooming/man_beard/' ~ beard ~ '.png') }}" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <p class="text-[8px] font-black uppercase tracking-widest text-[#ffb0d8]/50">Sculpting {{ loop.index }}</p>
+                                        <p class="text-base font-bold text-white group-hover:text-[#ffb0d8] transition-colors">{{ beard }}</p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% endif %}
+                    </div>
+
+                    <div class="bg-white/5 border border-white/5 p-8 rounded-[40px] space-y-4">
+                        <div class="flex items-center justify-center gap-4">
+                            <div class="w-10 h-10 rounded-full overflow-hidden bg-white/10 shrink-0 border border-white/10">
+                                <img src="{{ url_for('static', filename='assets/sila_stylist.png') }}" class="w-full h-full object-contain">
+                            </div>
+                            <p class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8]">Sila's Verdict</p>
+                        </div>
+                        <p class="text-[#ffb0d8]/40 font-playfair italic text-lg leading-relaxed text-center max-w-lg mx-auto">
+                            "Synthesis successful. Your grooming blueprint has been aligned with your harmonic profile for a balanced, architectural finish."
+                        </p>
+                    </div>
+
+                    <div class="pt-8 border-t border-white/5 text-center">
+                        <a href="{{ url_for('dashboard') }}" class="text-[9px] font-black uppercase tracking-widest text-white/20 hover:text-[#ffb0d8] transition-colors">Return to Studio &rarr;</a>
+                    </div>
+                </div>
+                {% elif error %}
+                <div class="glass-card-premium p-12 h-full flex flex-col items-center justify-center text-center space-y-8 min-h-[500px]">
+                    <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-red-400 mx-auto">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-xl font-playfair italic text-white/60">Synthesis Interrupted</p>
+                        <p class="text-[8px] font-black uppercase tracking-[0.3em] text-red-400/60">{{ error }}</p>
+                    </div>
+                    <button onclick="location.reload()" class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8] hover:underline">Retry Initialization</button>
+                </div>
+                {% else %}
+                <div class="glass-card-premium p-12 h-full flex flex-col items-center justify-center text-center space-y-8 min-h-[500px]">
+                    <div class="w-16 h-16 bg-white/2 rounded-full flex items-center justify-center text-white/5 mx-auto">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-xl font-playfair italic text-white/20">Awaiting Follicle Signal...</p>
+                        <p class="text-[8px] font-black uppercase tracking-[0.3em] text-white/10">Neural Analysis Module Offline</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('file-input');
+    const dropZone = document.getElementById('drop-zone');
+    const portalArt = document.getElementById('portal-art');
+
+    // Initialize upload handler
+    const groomingUpload = new UploadPortal({
+        zoneId: 'drop-zone',
+        inputId: 'file-input',
+        previewId: 'input-preview',
+        artElementId: 'portal-art',
+        laserElementId: 'scan-laser',
+        isMain: true,
+        onFileSelected: () => updateSila("Profile captured. Ready to synthesize follicular architecture.")
+    });
+
+
+
+    {% if processed_image %}
+    setTimeout(() => {
+        updateSila("Architecture locked. Your <span class='text-[#ffb0d8] font-black'>Grooming Blueprint</span> has been successfully synthesized.");
+    }, 1000);
+    {% else %}
+    setTimeout(() => {
+        updateSila("Ready to synchronize your grooming blueprint? Upload a portrait and we'll map your optimal architecture.");
+    }, 1500);
+    {% endif %}
+    {% if error %}
+    setTimeout(() => {
+        updateSila("⚠️ <span class='text-red-400'>Blueprint Error: {{ error }}</span>");
+    }, 500);
+    {% endif %}
+</script>
+
+{% endblock %}

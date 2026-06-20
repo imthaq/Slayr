@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+
+{% block title %}Smart Match — Slayr Suite{% endblock %}
+
+{% block content %}
+
+<style>
+    .smart-bg {
+        background: transparent;
+        min-height: 100vh;
+        width: 100%;
+        position: relative;
+    }
+
+    .glass-card-premium {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 40px;
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .match-portal {
+        aspect-ratio: 3/4;
+        border-radius: 40px;
+        border: 2px dashed rgba(255, 176, 216, 0.2);
+        background: rgba(255, 255, 255, 0.02);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .match-portal:hover {
+        background: rgba(255, 176, 216, 0.05);
+        border-color: rgba(255, 176, 216, 0.5);
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 0 60px rgba(255, 176, 216, 0.05);
+    }
+
+    .swatch-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .swatch-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: #ffb0d8;
+    }
+
+    .swatch-card.active {
+        background: rgba(255, 176, 216, 0.1);
+        border-color: #ffb0d8;
+    }
+
+    .color-preview {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-action {
+        background: linear-gradient(135deg, #ffb0d8, #d48bb7);
+        color: #2d1f26;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        padding: 18px 0;
+        border-radius: 100px;
+        transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        box-shadow: 0 10px 30px rgba(255, 176, 216, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .btn-action:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(255, 176, 216, 0.4);
+        border-color: white;
+    }
+
+    .custom-scroll {
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar { width: 4px; }
+    .custom-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #ffb0d8; border-radius: 10px; }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-entry {
+        animation: fadeIn 1s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    }
+
+    .canvas-studio {
+        aspect-ratio: 3/4;
+        border-radius: 30px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.02);
+    }
+</style>
+
+<div class="smart-bg pb-24 px-6">
+    <div class="max-w-6xl mx-auto space-y-16">
+
+        <header class="text-center space-y-4 animate-entry">
+            <div class="flex items-center justify-center gap-3">
+                <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-[#ffb0d8]">Foundation Ritual</h2>
+                <div class="h-2 w-2 rounded-full bg-[#ffb0d8] animate-pulse"></div>
+            </div>
+            <h1 class="text-6xl font-black text-white tracking-tighter">Smart <span class="text-white/20">Match</span></h1>
+            <p class="text-white/40 font-playfair italic text-lg md:text-xl max-w-xl mx-auto">Foundational synthesis. Align your dermal frequency with over 1,200 curated shades.</p>
+        </header>
+
+        <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
+
+            <div class="lg:col-span-1 space-y-10 animate-entry" style="animation-delay: 0.1s">
+                <div id="drop-zone" class="match-portal group w-full" 
+                     data-swatched-image="{{ url_for('static', filename='uploads/' + swatched_image) if swatched_image else '' }}"
+                     data-swatch-coords='{{ swatch_coords|tojson if swatch_coords else "{}" }}'
+                     data-foundation-hex="{{ matches[0].hex_code if matches else '' }}"
+                     data-concealer-hex="{{ concealer_matches[0].hex_code if concealer_matches else '' }}">
+
+                    <div id="portal-art" class="absolute inset-0 flex flex-col items-center justify-center p-12 text-center space-y-6 z-10 transition-opacity" {% if swatched_image %}style="opacity: 0;"{% endif %}>
+                        <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center text-[#ffb0d8] group-hover:scale-110 transition-transform">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        </div>
+                        <p class="text-[9px] font-black uppercase tracking-widest text-white/40">Initialize Portal</p>
+                    </div>
+
+                    <img id="preview-image" class="{% if not swatched_image %}hidden{% endif %} absolute inset-0 w-full h-full object-cover z-0" {% if swatched_image %}src="{{ url_for('static', filename='uploads/' + swatched_image) }}"{% endif %} />
+                    <div id="scan-laser" class="scan-line" style="opacity: 0;"></div>
+                    <input type="file" name="image" id="file-input" class="hidden" accept="image/*">
+                    <input type="hidden" name="existing_image" value="{{ swatched_image }}">
+                </div>
+
+                <div class="glass-card-premium p-8 space-y-6">
+                    <div class="space-y-4">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-white/30">Select Brand</label>
+                        <select name="brand" class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-xs font-black text-white focus:ring-0 cursor-pointer">
+                            <option value="" class="bg-[#2d1f26]">All Archetypes</option>
+                            {% for brand in brands %}
+                            <option value="{{ brand }}" class="bg-[#2d1f26]" {% if selected_brand == brand %}selected{% endif %}>{{ brand }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button type="submit" class="w-full btn-action">Generate Match</button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-12 animate-entry" style="animation-delay: 0.2s">
+                {% if skin_hex %}
+                <div class="glass-card-premium p-10 space-y-10">
+                    <div class="flex flex-col md:flex-row gap-12">
+
+                        <div class="flex-1 space-y-6">
+                           <p class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8]">Studio Mapping</p>
+                           <div class="canvas-studio relative">
+                               <canvas id="swatch-canvas" class="w-full h-full object-contain"></canvas>
+                           </div>
+                        </div>
+
+                        <div class="w-full md:w-80 space-y-10">
+
+                            <div class="space-y-6">
+                                <p class="text-[9px] font-black uppercase tracking-widest text-white/30">Foundation Matrix</p>
+                                <div class="custom-scroll space-y-4">
+                                    {% if matches %}
+                                    {% for match in matches %}
+                                    <div onclick="updateSwatch('foundation', '{{ match.hex_code }}', this)" 
+                                         class="swatch-card {% if loop.first %}active{% endif %} swatch-card-f">
+                                        <div class="color-preview" style="background-color: {{ match.hex_code }};"></div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-[9px] font-black text-white truncate uppercase">{{ match.brand }}</p>
+                                            <p class="text-[8px] font-black text-white/40 truncate">{{ match.name }}</p>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                    {% else %}
+                                    <p class="text-[10px] font-playfair italic text-white/20">Zero resonances found.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="space-y-6">
+                                <p class="text-[9px] font-black uppercase tracking-widest text-white/30">Concealer Matrix</p>
+                                <div class="custom-scroll space-y-4">
+                                    {% if concealer_matches %}
+                                    {% for match in concealer_matches %}
+                                    <div onclick="updateSwatch('concealer', '{{ match.hex_code }}', this)" 
+                                         class="swatch-card swatch-card-c">
+                                        <div class="color-preview" style="background-color: {{ match.hex_code }};"></div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-[9px] font-black text-white truncate uppercase">{{ match.brand }}</p>
+                                            <p class="text-[8px] font-black text-white/40 truncate">{{ match.name }}</p>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                    {% else %}
+                                    <p class="text-[10px] font-playfair italic text-white/20">Zero resonances found.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white/5 border border-white/5 p-8 rounded-3xl flex items-start gap-6">
+                        <div class="w-12 h-12 rounded-full overflow-hidden bg-white/10 shrink-0">
+                            <img src="{{ url_for('static', filename='assets/sila_stylist.png') }}" class="w-full h-full object-contain">
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8]">Sila's Verdict</p>
+                            <p class="text-[#ffb0d8]/40 font-playfair italic text-lg leading-relaxed">
+                                "These matches are synchronized with your spectral undertone. Focus on high-hydration formulas to maintain dermal luminosity."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% elif error %}
+                <div class="glass-card-premium p-12 h-full flex flex-col items-center justify-center text-center space-y-8 min-h-[500px]">
+                    <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-red-400 mx-auto">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-xl font-playfair italic text-white/60">Synchronization Interrupted</p>
+                        <p class="text-[8px] font-black uppercase tracking-[0.3em] text-red-400/60">{{ error }}</p>
+                    </div>
+                    <button onclick="location.reload()" class="text-[9px] font-black uppercase tracking-widest text-[#ffb0d8] hover:underline">Retry Initialization</button>
+                </div>
+                {% else %}
+                <div class="glass-card-premium p-12 flex flex-col items-center justify-center text-center space-y-6 min-h-[500px] border-dashed border-2">
+                    <div class="relative w-24 h-24 mb-4">
+                        <div class="absolute inset-0 border-2 border-white/5 rounded-full animate-ping opacity-20"></div>
+                        <div class="absolute inset-2 border-2 border-[#ffb0d8]/20 rounded-full animate-spin" style="animation-duration: 3s;"></div>
+                        <div class="absolute inset-0 flex items-center justify-center text-white/10">
+                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                        </div>
+                    </div>
+                    <div class="space-y-2 relative z-10 text-center">
+                        <p class="text-2xl font-playfair italic text-white/40">Awaiting Chromatic Signal...</p>
+                        <p class="text-[9px] font-black uppercase tracking-[0.4em] text-[#ffb0d8]/50">Neural Analysis Module Offline</p>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-white/5 pointer-events-none rounded-[40px]"></div>
+                </div>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('swatch-canvas');
+    const dropZone = document.getElementById('drop-zone');
+    const previewImage = document.getElementById('preview-image');
+    const portalArt = document.getElementById('portal-art');
+
+
+    const matchUpload = new UploadPortal({
+        zoneId: 'drop-zone',
+        inputId: 'file-input',
+        previewId: 'preview-image',
+        artElementId: 'portal-art',
+        laserElementId: 'scan-laser',
+        isMain: true,
+        onFileSelected: () => updateSila("Dermal profile captured. Ready to synthesize matches.")
+    });
+
+    if (canvas && dropZone) {
+        const swatchedImage = dropZone.dataset.swatchedImage;
+        const ctx = canvas.getContext('2d');
+        let currentFoundationHex = dropZone.dataset.foundationHex;
+        let currentConcealerHex = dropZone.dataset.concealerHex;
+        const skinHex = "{{ skin_hex or '' }}";
+
+        if (swatchedImage) {
+            const swatchCoords = JSON.parse(dropZone.dataset.swatchCoords || '{}');
+            previewImage.src = swatchedImage;
+            previewImage.classList.remove('hidden');
+            if (portalArt) portalArt.style.opacity = '0';
+
+            const img = new Image();
+            img.src = swatchedImage;
+
+            const fCoord = swatchCoords.foundation || { x: 0.3, y: 0.5 };
+            const cCoord = swatchCoords.concealer || { x: 0.7, y: 0.5 };
+
+            img.onload = () => {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                draw();
+                updateSila("Matches synchronized. Select a matrix card to update the studio swatch.");
+            };
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+                if (currentFoundationHex) drawSwatch(fCoord.x * canvas.width, fCoord.y * canvas.height, currentFoundationHex);
+                if (currentConcealerHex) drawSwatch(cCoord.x * canvas.width, cCoord.y * canvas.height, currentConcealerHex);
+            }
+
+            function drawSwatch(x, y, hex) {
+                const radius = canvas.width * 0.04;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = "white";
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(x, y, radius * 0.9, 0, 2 * Math.PI);
+                ctx.fillStyle = hex;
+                ctx.fill();
+            }
+
+            window.updateSwatch = function (type, hex, element) {
+                if (type === 'foundation') currentFoundationHex = hex;
+                if (type === 'concealer') currentConcealerHex = hex;
+
+                const selector = type === 'foundation' ? '.swatch-card-f' : '.swatch-card-c';
+                document.querySelectorAll(selector).forEach(el => el.classList.remove('active'));
+                element.classList.add('active');
+
+                draw();
+                updateSila("Matrix updated. Harmonizing with the <span class='text-[#ffb0d8] font-black'>" + hex + "</span> frequency.");
+            }
+        } else if (skinHex) {
+            canvas.width = 400;
+            canvas.height = 500;
+            
+            function drawVectorLayout() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw elegant rounded border
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+                ctx.lineWidth = 1;
+                ctx.strokeRect(10, 10, 380, 480);
+                
+                // Draw connecting lines
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(200, 150);
+                ctx.lineTo(110, 330);
+                ctx.moveTo(200, 150);
+                ctx.lineTo(290, 330);
+                ctx.stroke();
+
+                // 1. Skin Tone (Center/Top)
+                drawColorNode(200, 150, 75, skinHex, "Skin Tone", skinHex.toUpperCase());
+
+                // 2. Foundation (Left/Bottom)
+                if (currentFoundationHex) {
+                    drawColorNode(110, 330, 55, currentFoundationHex, "Foundation", currentFoundationHex.toUpperCase());
+                }
+
+                // 3. Concealer (Right/Bottom)
+                if (currentConcealerHex) {
+                    drawColorNode(290, 330, 55, currentConcealerHex, "Concealer", currentConcealerHex.toUpperCase());
+                }
+            }
+
+            function drawColorNode(x, y, radius, hex, label, value) {
+                // outer ring glow
+                const grad = ctx.createRadialGradient(x, y, radius * 0.9, x, y, radius * 1.2);
+                grad.addColorStop(0, hex + "33");
+                grad.addColorStop(1, "transparent");
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(x, y, radius * 1.2, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // outer white border
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+                ctx.fill();
+
+                // inner color fill
+                ctx.beginPath();
+                ctx.arc(x, y, radius * 0.9, 0, 2 * Math.PI);
+                ctx.fillStyle = hex;
+                ctx.fill();
+
+                // Label Text
+                ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+                ctx.font = "bold 10px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText(label.toUpperCase(), x, y + radius + 18);
+
+                // Value Text
+                ctx.fillStyle = "white";
+                ctx.font = "bold 12px sans-serif";
+                ctx.fillText(value, x, y + radius + 34);
+            }
+
+            drawVectorLayout();
+            updateSila("Profile preloaded. Select matrix cards to update the comparison swatch.");
+
+            window.updateSwatch = function (type, hex, element) {
+                if (type === 'foundation') currentFoundationHex = hex;
+                if (type === 'concealer') currentConcealerHex = hex;
+
+                const selector = type === 'foundation' ? '.swatch-card-f' : '.swatch-card-c';
+                document.querySelectorAll(selector).forEach(el => el.classList.remove('active'));
+                element.classList.add('active');
+
+                drawVectorLayout();
+                updateSila("Matrix updated. Harmonizing with the <span class='text-[#ffb0d8] font-black'>" + hex + "</span> frequency.");
+            }
+        }
+    }
+
+    {% if error %}
+    setTimeout(() => {
+        updateSila("⚠️ <span class='text-red-400'>Sync Failed: {{ error }}</span>");
+    }, 500);
+    {% endif %}
+</script>
+
+{% endblock %}
