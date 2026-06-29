@@ -1,4 +1,4 @@
-﻿# Slayr | Advanced AI Aesthetic Engine
+# Slayr | Advanced AI Aesthetic Engine
 
 **Live Demo**: [slayr.onrender.com](https://slayr.onrender.com/)
 
@@ -85,6 +85,11 @@ The Wardrobe system leverages the CLIP (Contrastive Language-Image Pre-training)
 ## Design Philosophy
 
 Slayr is built on the **Aura-Prism UI** system, a bespoke design framework characterized by glassmorphism, dynamic gradients, and fluid micro-animations. The interface is designed to be data-centric yet visually premium, ensuring that complex analytical results are presented in an accessible and sophisticated manner.
+
+## Contributors
+
+*   [@Laibabasharat-26](https://github.com/Laibabasharat-26)
+*   [@Anamta-Tariq](https://github.com/Anamta-Tariq)
 
 ---
 **Copyright 2026 Slayr AI Team. All rights reserved.**
