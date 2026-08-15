@@ -67,6 +67,27 @@ def get_clip():
 
 USE_CLIP = os.environ.get("USE_CLIP", "1") == "1"
 
+# Minimum free system memory (MB) required before attempting to load CLIP.
+# Loading the full fp32 checkpoint briefly needs ~600-700MB before it gets
+# quantized down, so we require solid headroom above that. On Render's
+# free tier (512MB total) this check will fail and classification falls
+# back to "unknown" gracefully, instead of risking an OOM kill of the
+# whole container. On a normal local machine/Docker Desktop (multiple GB
+# available) this passes and full CLIP classification runs.
+MIN_FREE_MB_FOR_CLIP = 900
+
+def _available_memory_mb():
+    """Return free system memory in MB, or None if it can't be determined
+    (e.g. on Windows, where /proc/meminfo doesn't exist)."""
+    try:
+        with open("/proc/meminfo") as f:
+            for line in f:
+                if line.startswith("MemAvailable:"):
+                    return int(line.split()[1]) / 1024
+    except Exception:
+        return None
+    return None
+
 def classify_item(image_path):
     if not USE_CLIP:
         name = os.path.basename(image_path).lower()
@@ -75,6 +96,12 @@ def classify_item(image_path):
                 if kw in name:
                     return cat, kw.capitalize()
         return "top", "Item"
+
+    if _clip_model is None:
+        free_mb = _available_memory_mb()
+        if free_mb is not None and free_mb < MIN_FREE_MB_FOR_CLIP:
+            print(f"Skipping CLIP load: only {free_mb:.0f}MB free (need {MIN_FREE_MB_FOR_CLIP}MB)")
+            return "unknown", "Item"
 
     try:
         model, processor = get_clip()
