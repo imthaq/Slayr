@@ -12,5 +12,5 @@ scikit-learn
 colormath
 Pillow
 flask-limiter
-torch==2.5.1+cpu
+torch==2.6.0+cpu
 transformers==5.15.0
