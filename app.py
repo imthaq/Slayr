@@ -139,15 +139,24 @@ def load_user(user_id):
 
 
 
-base_options = python.BaseOptions(model_asset_path=MODEL_PATH)
-options = vision.FaceLandmarkerOptions(
-    base_options=base_options,
-    output_face_blendshapes=False,
-    output_facial_transformation_matrixes=True,
-    num_faces=1,
-    min_face_detection_confidence=0.5
-)
-detector = vision.FaceLandmarker.create_from_options(options)
+_detector = None
+
+def get_detector():
+    """Lazily create the MediaPipe FaceLandmarker on first use instead of at
+    import time. This avoids paying its memory cost on every worker boot,
+    including for requests that never touch face-landmarking features."""
+    global _detector
+    if _detector is None:
+        base_options = python.BaseOptions(model_asset_path=MODEL_PATH)
+        options = vision.FaceLandmarkerOptions(
+            base_options=base_options,
+            output_face_blendshapes=False,
+            output_facial_transformation_matrixes=True,
+            num_faces=1,
+            min_face_detection_confidence=0.5
+        )
+        _detector = vision.FaceLandmarker.create_from_options(options)
+    return _detector
 
 MST_X = np.array([item[:3] for item in MST_LAB], dtype=np.float32)
 SEASON_X = np.array([item[:3] for item in SEASON_LAB], dtype=np.float32)
@@ -824,7 +833,7 @@ def chroma_skin():
                                 wrist_image = cv2.imread(wrist_filepath)
 
                         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-                        detection_result = detector.detect(mp_image)
+                        detection_result = get_detector().detect(mp_image)
 
                         if detection_result.face_landmarks:
                             skin_hex, undertone, lab_std, season_12, mst_label = analyze_color(image, detection_result.face_landmarks[0], wrist_image=wrist_image)
@@ -954,7 +963,7 @@ def smart_match():
                 error = "no_file"
             else:
                 mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-                detection_result = detector.detect(mp_image)
+                detection_result = get_detector().detect(mp_image)
 
                 if detection_result.face_landmarks:
                     hex_code, undertone, lab_std, season_12, mst_label = analyze_color(image, detection_result.face_landmarks[0])
@@ -1102,7 +1111,7 @@ def vibe_check():
                     else:
                         uploaded_image = filename
                     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-                    detection_result = detector.detect(mp_image)
+                    detection_result = get_detector().detect(mp_image)
 
                     if detection_result.face_landmarks:
                         landmarks = detection_result.face_landmarks[0]
@@ -1176,7 +1185,7 @@ def morpho_analyze():
         return jsonify({'error': 'Invalid image file'}), 400
     image = cv2.imread(filepath)
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-    detection_result = detector.detect(mp_image)
+    detection_result = get_detector().detect(mp_image)
 
     if detection_result.face_landmarks:
         face_landmarks_list = detection_result.face_landmarks[0]
@@ -1587,7 +1596,7 @@ def frame_fit():
 
                     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB,
                                         data=cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-                    detection_result = detector.detect(mp_image)
+                    detection_result = get_detector().detect(mp_image)
 
                     if detection_result.face_landmarks:
                         if not current_user.is_authenticated:
@@ -1694,7 +1703,7 @@ def grooming_blueprint():
                 error = "Invalid image file."
             else:
                 mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-                detection_result = detector.detect(mp_image)
+                detection_result = get_detector().detect(mp_image)
 
                 if detection_result.face_landmarks:
                     landmarks = detection_result.face_landmarks[0]
@@ -1920,7 +1929,7 @@ def analyze():
     if image is None: return jsonify({'error': 'Invalid image'}), 400
 
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-    detection_result = detector.detect(mp_image)
+    detection_result = get_detector().detect(mp_image)
 
     if not detection_result.face_landmarks: return jsonify({'error': 'No face detected'}), 400
 
