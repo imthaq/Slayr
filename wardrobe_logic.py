@@ -57,7 +57,6 @@ def get_clip():
         _clip_model = CLIPModel.from_pretrained(
             "openai/clip-vit-base-patch32",
             low_cpu_mem_usage=True,
-            use_safetensors=True,
         )
         _clip_model.eval()
         _clip_model = torch.quantization.quantize_dynamic(
