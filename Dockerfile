@@ -5,5 +5,6 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN python -c "from transformers import CLIPModel, CLIPProcessor; CLIPModel.from_pretrained('openai/clip-vit-base-patch32', use_safetensors=True); CLIPProcessor.from_pretrained('openai/clip-vit-base-patch32')"
 ENV HF_HUB_OFFLINE=1
+ENV PYTHONUNBUFFERED=1
 EXPOSE 5000
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:5000"]
+CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:5000", "--timeout", "120"]
