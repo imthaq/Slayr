@@ -2,7 +2,7 @@ FROM python:3.10-slim
 RUN apt-get update && apt-get install -y libgl1 libgles2 libegl1 libglib2.0-0 libgomp1 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --default-timeout=1000 --retries 10 -r requirements.txt
 RUN python -c "from transformers import CLIPModel, CLIPProcessor; CLIPModel.from_pretrained('openai/clip-vit-base-patch32'); CLIPProcessor.from_pretrained('openai/clip-vit-base-patch32')"
 COPY . .
 ENV HF_HUB_OFFLINE=1
