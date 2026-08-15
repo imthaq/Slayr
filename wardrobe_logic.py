@@ -53,7 +53,13 @@ NEUTRAL_COLORS = {"white", "black", "grey", "navy", "beige", "brown"}
 def get_clip():
     global _clip_model, _clip_processor
     if _clip_model is None:
-        _clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+        torch.set_num_threads(1)
+        _clip_model = CLIPModel.from_pretrained(
+            "openai/clip-vit-base-patch32",
+            torch_dtype=torch.float16,
+            low_cpu_mem_usage=True,
+        )
+        _clip_model.eval()
         _clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
     return _clip_model, _clip_processor
 
@@ -72,6 +78,7 @@ def classify_item(image_path):
         model, processor = get_clip()
         img = Image.open(image_path).convert("RGB")
         inputs = processor(text=CLOTHING_LABELS, images=img, return_tensors="pt", padding=True)
+        inputs["pixel_values"] = inputs["pixel_values"].to(torch.float16)
         with torch.no_grad():
             outputs = model(**inputs)
         probs = outputs.logits_per_image.softmax(dim=1)
