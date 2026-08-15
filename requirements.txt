@@ -1,3 +1,4 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
 flask
 mediapipe
 opencv-python-headless
@@ -11,5 +12,5 @@ scikit-learn
 colormath
 Pillow
 flask-limiter
-torch
+torch==2.3.0+cpu
 transformers
