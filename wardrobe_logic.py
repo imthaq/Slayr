@@ -58,6 +58,7 @@ def get_clip():
             "openai/clip-vit-base-patch32",
             torch_dtype=torch.float16,
             low_cpu_mem_usage=True,
+            use_safetensors=True,
         )
         _clip_model.eval()
         _clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
