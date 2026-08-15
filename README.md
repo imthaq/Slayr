@@ -87,7 +87,7 @@ The Wardrobe system leverages the CLIP (Contrastive Language-Image Pre-training)
 Slayr is built on the **Aura-Prism UI** system, a bespoke design framework characterized by glassmorphism, dynamic gradients, and fluid micro-animations. The interface is designed to be data-centric yet visually premium, ensuring that complex analytical results are presented in an accessible and sophisticated manner.
 
 ## Contributors
-
+*   [@imthaq](https://github.com/imthaq)
 *   [@Laibabasharat-26](https://github.com/Laibabasharat-26)
 *   [@Anamta-Tariq](https://github.com/Anamta-Tariq)
 
