@@ -76,9 +76,41 @@ USE_CLIP = os.environ.get("USE_CLIP", "1") == "1"
 # available) this passes and full CLIP classification runs.
 MIN_FREE_MB_FOR_CLIP = 900
 
+def _cgroup_available_mb():
+    """Return free memory (MB) as seen by the container's cgroup limit,
+    or None if no cgroup limit is set/detectable. This is what actually
+    matters on Render/Docker, since /proc/meminfo reports the HOST
+    machine's memory, not the container's enforced limit."""
+    try:
+        # cgroup v2
+        with open("/sys/fs/cgroup/memory.max") as f:
+            limit_raw = f.read().strip()
+        if limit_raw != "max":
+            limit = int(limit_raw)
+            with open("/sys/fs/cgroup/memory.current") as f:
+                usage = int(f.read().strip())
+            return (limit - usage) / (1024 * 1024)
+    except Exception:
+        pass
+    try:
+        # cgroup v1
+        with open("/sys/fs/cgroup/memory/memory.limit_in_bytes") as f:
+            limit = int(f.read().strip())
+        if limit < (1 << 40):  # ignore "unlimited" sentinel values
+            with open("/sys/fs/cgroup/memory/memory.usage_in_bytes") as f:
+                usage = int(f.read().strip())
+            return (limit - usage) / (1024 * 1024)
+    except Exception:
+        pass
+    return None
+
 def _available_memory_mb():
-    """Return free system memory in MB, or None if it can't be determined
-    (e.g. on Windows, where /proc/meminfo doesn't exist)."""
+    """Return free memory in MB, preferring the container's actual cgroup
+    limit (accurate on Render/Docker) and falling back to /proc/meminfo's
+    host-level figure, or None if neither is readable (e.g. on Windows)."""
+    cgroup_mb = _cgroup_available_mb()
+    if cgroup_mb is not None:
+        return cgroup_mb
     try:
         with open("/proc/meminfo") as f:
             for line in f:
